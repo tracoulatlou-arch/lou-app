@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paramètres</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      padding: 1rem;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h2 {
+      margin-top: 2rem;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .input-group input {
+      flex: 1;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .delete-btn {
+      background-color: transparent;
+      border: none;
+      color: red;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="index.html">⬅️ Retour à l'accueil</a>
+  <h1>⚙️ Paramètres</h1>
+
+  <!-- 🔹 Bloc Catégories -->
+  <section>
+    <h2>Catégories</h2>
+    <div class="input-group">
+      <input type="text" id="nouvelle-categorie" placeholder="Ajouter une catégorie">
+      <button onclick="ajouterCategorie()">Ajouter</button>
+    </div>
+    <ul id="liste-categories"></ul>
+  </section>
+
+  <!-- 🔹 Bloc Comptes -->
+  <section>
+    <h2>Comptes</h2>
+    <div class="input-group">
+      <input type="text" id="nouveau-compte" placeholder="Ajouter un compte">
+      <button onclick="ajouterCompte()">Ajouter</button>
+    </div>
+    <ul id="liste-comptes"></ul>
+  </section>
+
+  <script>
+    // Initialisation
+    let categories = JSON.parse(localStorage.getItem('categories')) || ["Loyer", "Courses", "Essence", "Assurance", "Sorties", "Salaire", "Autres"];
+    let comptes = JSON.parse(localStorage.getItem('comptes')) || ["Compte Courant", "Épargne IPEL", "Épargne IVA", "Révolut", "Trade Republic"];
+
+    function afficherListes() {
+      // Catégories
+      const ulCat = document.getElementById('liste-categories');
+      ulCat.innerHTML = '';
+      categories.forEach((cat, index) => {
+        const li = document.createElement('li');
+        li.textContent = cat + ' ';
+        const btn = document.createElement('button');
+        btn.textContent = '❌';
+        btn.className = 'delete-btn';
+        btn.onclick = () => {
+          categories.splice(index, 1);
+          localStorage.setItem('categories', JSON.stringify(categories));
+          afficherListes();
+        };
+        li.appendChild(btn);
+        ulCat.appendChild(li);
+      });
+
+      // Comptes
+      const ulComp = document.getElementById('liste-comptes');
+      ulComp.innerHTML = '';
+      comptes.forEach((comp, index) => {
+        const li = document.createElement('li');
+        li.textContent = comp + ' ';
+        const btn = document.createElement('button');
+        btn.textContent = '❌';
+        btn.className = 'delete-btn';
+        btn.onclick = () => {
+          comptes.splice(index, 1);
+          localStorage.setItem('comptes', JSON.stringify(comptes));
+          afficherListes();
+        };
+        li.appendChild(btn);
+        ulComp.appendChild(li);
+      });
+    }
+
+    function ajouterCategorie() {
+      const input = document.getElementById('nouvelle-categorie');
+      const nouvelle = input.value.trim();
+      if (nouvelle && !categories.includes(nouvelle)) {
+        categories.push(nouvelle);
+        localStorage.setItem('categories', JSON.stringify(categories));
+        input.value = '';
+        afficherListes();
+      }
+    }
+
+    function ajouterCompte() {
+      const input = document.getElementById('nouveau-compte');
+      const nouveau = input.value.trim();
+      if (nouveau && !comptes.includes(nouveau)) {
+        comptes.push(nouveau);
+        localStorage.setItem('comptes', JSON.stringify(comptes));
+        input.value = '';
+        afficherListes();
+      }
+    }
+
+    afficherListes();
+  </script>
+</body>
+</html>
