@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let transactions = [];
   let indexAModifier = null;
 
-  const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwaYlWmljDm4yGhDsKUwNATg_KZxA4EWEYFQNg4J-ZnPWLRckVOJ_0jOMedop4uyAnJOQ/exec";
+  const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbydqzz_DmP8Fzhrin6OAppdGseHRhS7ClcVNGrA-vFsm14cef9G6IVMH5v-AhgQ2qZ7Yg/exec";
 
   const form = document.getElementById("form-ajout");
   const typeInput = document.getElementById("type");
