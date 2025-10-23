@@ -53,6 +53,23 @@ document.addEventListener('DOMContentLoaded', function () {
     localStorage.setItem("transactions", JSON.stringify(transactions));
   }
 
+  function envoyerVersGoogleSheet(transaction) {
+    const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyFaoVqqG032P00xTwiBw6MesraMxbIXDQwrAbFBRFYxenHjiSKfCErXY-GoIl2fEfdFw/exec";
+
+    fetch(URL_GOOGLE_APPS_SCRIPT, {
+      method: "POST",
+      mode: "no-cors", // pour éviter les erreurs CORS
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(transaction)
+    }).then(() => {
+      console.log("✅ Donnée envoyée à Google Sheets");
+    }).catch(err => {
+      console.error("❌ Erreur d'envoi :", err);
+    });
+  }
+
   function afficherTransactions() {
     const moisFiltre = parseInt(moisSelect.value);
     const anneeFiltre = parseInt(anneeSelect.value);
@@ -86,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function () {
         parCategorie[tx.categorie] = (parCategorie[tx.categorie] || 0) + tx.montant;
       }
 
-      // ➕ Affichage de la ligne avec boutons
       const li = document.createElement("li");
       const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
       li.innerHTML = `
@@ -133,7 +149,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     afficherSoldeCumule();
 
-    // 🎯 Activer suppression
     document.querySelectorAll(".btn-supprimer").forEach(btn => {
       btn.addEventListener("click", () => {
         const index = parseInt(btn.dataset.index);
@@ -143,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
 
-    // ✏️ Activer modification
     document.querySelectorAll(".btn-modifier").forEach(btn => {
       btn.addEventListener("click", () => {
         const index = parseInt(btn.dataset.index);
@@ -189,6 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
       indexAModifier = null;
     } else {
       transactions.push(nouvelle);
+      envoyerVersGoogleSheet(nouvelle); // <-- envoi vers Google Sheets ici
     }
 
     enregistrerTransactions();
