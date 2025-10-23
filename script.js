@@ -1,7 +1,7 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwHYBuZGqLH4AB3DuLUc76LHonDKKsnE9pQyrpMYFzSllBFjdlmUst143yj7ufy8Wj9bw/exec";
+document.addEventListener('DOMContentLoaded', async function () {
+  const SHEET_BEST_URL = "https://api.sheetbest.com/sheets/dfb86ada-81c7-4a1c-8bc4-544c2281c911";
 
-document.addEventListener('DOMContentLoaded', function () {
-  let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+  let transactions = [];
   let indexAModifier = null;
 
   const form = document.getElementById("form-ajout");
@@ -19,25 +19,28 @@ document.addEventListener('DOMContentLoaded', function () {
   const comptesList = document.getElementById("comptes-list");
   const totalCumuleDiv = document.getElementById("total-cumule");
   const camembert = document.getElementById("camembert");
-
   let camembertChart;
 
   const categories = ["Courses", "Loyer", "Essence", "Sortie", "Salaire", "Autre"];
   const comptes = ["Compte courant", "Épargne", "Revolut", "Trade Republic"];
+
+  function getMoisNom(index) {
+    return ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][index];
+  }
 
   function remplirSelects() {
     categorieInput.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
     compteInput.innerHTML = comptes.map(c => `<option value="${c}">${c}</option>`).join('');
   }
 
-  function getMoisNom(index) {
-    return ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][index];
-  }
-
   function remplirFiltres() {
-    moisSelect.innerHTML = [...Array(12).keys()].map(i => `<option value="${i}">${getMoisNom(i)}</option>`).join('');
+    moisSelect.innerHTML = [...Array(12).keys()].map(i =>
+      `<option value="${i}">${getMoisNom(i)}</option>`
+    ).join('');
     const anneeActuelle = new Date().getFullYear();
-    anneeSelect.innerHTML = [...Array(10).keys()].map(i => `<option value="${anneeActuelle - i}">${anneeActuelle - i}</option>`).join('');
+    anneeSelect.innerHTML = [...Array(10).keys()].map(i =>
+      `<option value="${anneeActuelle - i}">${anneeActuelle - i}</option>`
+    ).join('');
     moisSelect.value = new Date().getMonth();
     anneeSelect.value = new Date().getFullYear();
 
@@ -47,7 +50,46 @@ document.addEventListener('DOMContentLoaded', function () {
     moisAnneeInput.value = `${annee}-${mois}`;
   }
 
-  function enregistrerTransactions() {
+  async function chargerTransactionsDepuisSheet() {
+    try {
+      const response = await fetch(SHEET_BEST_URL);
+      const data = await response.json();
+      transactions = data.map((tx, index) => ({
+        ...tx,
+        montant: parseFloat(tx.montant),
+        index
+      }));
+      afficherTransactions();
+    } catch (e) {
+      console.error("Erreur de chargement des données :", e);
+    }
+  }
+
+  async function envoyerTransactionDansSheet(transaction) {
+    try {
+      await fetch(SHEET_BEST_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(transaction)
+      });
+    } catch (e) {
+      console.error("Erreur lors de l'envoi :", e);
+    }
+  }
+
+  async function supprimerTransactionDansSheet(transaction) {
+    try {
+      await fetch(SHEET_BEST_URL, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(transaction)
+      });
+    } catch (e) {
+      console.error("Erreur suppression :", e);
+    }
+  }
+
+  function enregistrerTransactionsLocal() {
     localStorage.setItem("transactions", JSON.stringify(transactions));
   }
 
@@ -126,26 +168,21 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
 
+    afficherSoldeCumule();
+    enregistrerTransactionsLocal();
+
+    // boutons suppression
     document.querySelectorAll(".btn-supprimer").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const index = parseInt(btn.dataset.index);
         const tx = transactions[index];
-
-        fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({ ...tx, action: "delete" }),
-          headers: { "Content-Type": "application/json" }
-        })
-          .then(res => res.json())
-          .then(() => {
-            transactions.splice(index, 1);
-            enregistrerTransactions();
-            afficherTransactions();
-          })
-          .catch(err => console.error("Erreur suppression:", err));
+        transactions.splice(index, 1);
+        afficherTransactions();
+        await supprimerTransactionDansSheet(tx);
       });
     });
 
+    // boutons modification
     document.querySelectorAll(".btn-modifier").forEach(btn => {
       btn.addEventListener("click", () => {
         const index = parseInt(btn.dataset.index);
@@ -158,12 +195,9 @@ document.addEventListener('DOMContentLoaded', function () {
         compteInput.value = tx.compte;
         moisAnneeInput.value = tx.date;
         descriptionInput.value = tx.description || "";
-
         indexAModifier = index;
       });
     });
-
-    afficherSoldeCumule();
   }
 
   function afficherSoldeCumule() {
@@ -174,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function () {
     totalCumuleDiv.textContent = `💼 Solde total cumulé : ${total.toFixed(2)} €`;
   }
 
-  form.addEventListener("submit", function (e) {
+  form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const nouvelle = {
@@ -184,30 +218,20 @@ document.addEventListener('DOMContentLoaded', function () {
       sousCategorie: sousCategorieInput.value.trim(),
       compte: compteInput.value,
       date: moisAnneeInput.value,
-      description: descriptionInput.value.trim(),
-      action: "add"
+      description: descriptionInput.value.trim()
     };
 
-    fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(nouvelle),
-      headers: { "Content-Type": "application/json" }
-    })
-      .then(res => res.json())
-      .then(() => {
-        if (indexAModifier !== null) {
-          transactions[indexAModifier] = nouvelle;
-          indexAModifier = null;
-        } else {
-          transactions.push(nouvelle);
-        }
+    if (indexAModifier !== null) {
+      transactions[indexAModifier] = nouvelle;
+      indexAModifier = null;
+    } else {
+      transactions.push(nouvelle);
+      await envoyerTransactionDansSheet(nouvelle);
+    }
 
-        enregistrerTransactions();
-        afficherTransactions();
-        form.reset();
-        remplirFiltres();
-      })
-      .catch(err => console.error("Erreur lors de l'envoi:", err));
+    afficherTransactions();
+    form.reset();
+    remplirFiltres();
   });
 
   moisSelect.addEventListener("change", afficherTransactions);
@@ -215,5 +239,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
   remplirSelects();
   remplirFiltres();
-  afficherTransactions();
+  await chargerTransactionsDepuisSheet();
 });
