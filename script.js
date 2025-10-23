@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let transactions = [];
   let indexAModifier = null;
 
-  const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwMgvGoM2GjYsAE5Ib1MfsCB5rmWgITbOHN0bYEiwxJ-tgDm1CxlTEgN6fBSL2PmhXobA/exec";
+  const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwaYlWmljDm4yGhDsKUwNATg_KZxA4EWEYFQNg4J-ZnPWLRckVOJ_0jOMedop4uyAnJOQ/exec";
 
   const form = document.getElementById("form-ajout");
   const typeInput = document.getElementById("type");
@@ -64,7 +64,6 @@ document.addEventListener('DOMContentLoaded', function () {
       const [annee, mois] = tx.date.split("-");
       return { ...tx, index, mois: parseInt(mois), annee: parseInt(annee) };
     }).filter(tx => tx.mois - 1 === moisFiltre && tx.annee === anneeFiltre);
-
 
     let solde = 0;
     const parCompte = {};
@@ -137,6 +136,16 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll(".btn-supprimer").forEach(btn => {
       btn.addEventListener("click", () => {
         const index = parseInt(btn.dataset.index);
+
+        // Supprimer dans Google Sheets
+        fetch(URL_GOOGLE_APPS_SCRIPT, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ index })
+        });
+
         transactions.splice(index, 1);
         enregistrerTransactions();
         afficherTransactions();
@@ -185,20 +194,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (indexAModifier !== null) {
       transactions[indexAModifier] = nouvelle;
+
+      // Modifier dans Google Sheets
+      fetch(URL_GOOGLE_APPS_SCRIPT, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          ...nouvelle,
+          index: indexAModifier
+        })
+      });
+
       indexAModifier = null;
     } else {
       transactions.push(nouvelle);
-    }
 
-    // Envoi à Google Sheets
-    fetch(URL_GOOGLE_APPS_SCRIPT, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(nouvelle)
-    });
+      // Ajouter dans Google Sheets
+      fetch(URL_GOOGLE_APPS_SCRIPT, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(nouvelle)
+      });
+    }
 
     enregistrerTransactions();
     afficherTransactions();
@@ -212,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function () {
   remplirSelects();
   remplirFiltres();
 
-  // 🔄 Chargement des données depuis Google Sheets
+  // Chargement initial depuis Google Sheets
   fetch(URL_GOOGLE_APPS_SCRIPT)
     .then(response => response.json())
     .then(data => {
