@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
-  let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+  let transactions = [];
   let indexAModifier = null;
+
+  const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbwMgvGoM2GjYsAE5Ib1MfsCB5rmWgITbOHN0bYEiwxJ-tgDm1CxlTEgN6fBSL2PmhXobA/exec";
 
   const form = document.getElementById("form-ajout");
   const typeInput = document.getElementById("type");
@@ -16,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const soldeTotalDiv = document.getElementById("solde-total");
   const comptesList = document.getElementById("comptes-list");
   const totalCumuleDiv = document.getElementById("total-cumule");
-
   const camembert = document.getElementById("camembert");
   let camembertChart;
 
@@ -51,23 +52,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function enregistrerTransactions() {
     localStorage.setItem("transactions", JSON.stringify(transactions));
-  }
-
-  function envoyerVersGoogleSheet(transaction) {
-    const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbyFaoVqqG032P00xTwiBw6MesraMxbIXDQwrAbFBRFYxenHjiSKfCErXY-GoIl2fEfdFw/exec";
-
-    fetch(URL_GOOGLE_APPS_SCRIPT, {
-      method: "POST",
-      mode: "no-cors", // pour éviter les erreurs CORS
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(transaction)
-    }).then(() => {
-      console.log("✅ Donnée envoyée à Google Sheets");
-    }).catch(err => {
-      console.error("❌ Erreur d'envoi :", err);
-    });
   }
 
   function afficherTransactions() {
@@ -203,8 +187,17 @@ document.addEventListener('DOMContentLoaded', function () {
       indexAModifier = null;
     } else {
       transactions.push(nouvelle);
-      envoyerVersGoogleSheet(nouvelle); // <-- envoi vers Google Sheets ici
     }
+
+    // Envoi à Google Sheets
+    fetch(URL_GOOGLE_APPS_SCRIPT, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(nouvelle)
+    });
 
     enregistrerTransactions();
     afficherTransactions();
@@ -217,5 +210,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
   remplirSelects();
   remplirFiltres();
-  afficherTransactions();
+
+  // 🔄 Chargement des données depuis Google Sheets
+  fetch(URL_GOOGLE_APPS_SCRIPT)
+    .then(response => response.json())
+    .then(data => {
+      transactions = data.map(t => ({
+        type: t.type,
+        montant: parseFloat(t.montant),
+        categorie: t.categorie,
+        sousCategorie: t.sousCategorie,
+        compte: t.compte,
+        date: t.date,
+        description: t.description
+      }));
+
+      enregistrerTransactions();
+      afficherTransactions();
+    })
+    .catch(error => {
+      console.error("Erreur de chargement des données Google Sheets :", error);
+    });
 });
