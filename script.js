@@ -24,32 +24,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   const categories = ["Courses", "Loyer", "Essence", "Sortie", "Salaire", "Autre"];
   const comptes = ["Compte courant", "Épargne", "Revolut", "Trade Republic"];
 
-  function getMoisNom(index) {
-    return ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][index];
-  }
-
-  function remplirSelects() {
-    categorieInput.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-    compteInput.innerHTML = comptes.map(c => `<option value="${c}">${c}</option>`).join('');
-  }
-
-  function remplirFiltres() {
-    moisSelect.innerHTML = [...Array(12).keys()].map(i =>
-      `<option value="${i}">${getMoisNom(i)}</option>`
-    ).join('');
-    const anneeActuelle = new Date().getFullYear();
-    anneeSelect.innerHTML = [...Array(10).keys()].map(i =>
-      `<option value="${anneeActuelle - i}">${anneeActuelle - i}</option>`
-    ).join('');
-    moisSelect.value = new Date().getMonth();
-    anneeSelect.value = new Date().getFullYear();
-
-    const now = new Date();
-    const mois = String(now.getMonth() + 1).padStart(2, '0');
-    const annee = now.getFullYear();
-    moisAnneeInput.value = `${annee}-${mois}`;
-  }
-
+  // === Communication avec Sheet.best ===
   async function chargerTransactionsDepuisSheet() {
     try {
       const response = await fetch(SHEET_BEST_URL);
@@ -79,18 +54,39 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   async function supprimerTransactionDansSheet(transaction) {
     try {
-      await fetch(SHEET_BEST_URL, {
+      await fetch(`${SHEET_BEST_URL}/timestamp=${encodeURIComponent(transaction.timestamp)}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(transaction)
       });
     } catch (e) {
-      console.error("Erreur suppression :", e);
+      console.error("Erreur suppression Sheet :", e);
     }
   }
 
-  function enregistrerTransactionsLocal() {
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+  // === Affichage et logique ===
+  function remplirSelects() {
+    categorieInput.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    compteInput.innerHTML = comptes.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
+  function getMoisNom(index) {
+    return ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][index];
+  }
+
+  function remplirFiltres() {
+    moisSelect.innerHTML = [...Array(12).keys()].map(i =>
+      `<option value="${i}">${getMoisNom(i)}</option>`
+    ).join('');
+    const anneeActuelle = new Date().getFullYear();
+    anneeSelect.innerHTML = [...Array(10).keys()].map(i =>
+      `<option value="${anneeActuelle - i}">${anneeActuelle - i}</option>`
+    ).join('');
+    moisSelect.value = new Date().getMonth();
+    anneeSelect.value = new Date().getFullYear();
+
+    const now = new Date();
+    const mois = String(now.getMonth() + 1).padStart(2, '0');
+    const annee = now.getFullYear();
+    moisAnneeInput.value = `${annee}-${mois}`;
   }
 
   function afficherTransactions() {
@@ -99,16 +95,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     listeTransactions.innerHTML = "";
 
-    const filtres = transactions.map((tx, index) => {
+    const filtres = transactions.filter((tx) => {
       const [annee, mois] = tx.date.split("-");
-      return { ...tx, index, mois: parseInt(mois), annee: parseInt(annee) };
-    }).filter(tx => tx.mois === moisFiltre + 1 && tx.annee === anneeFiltre);
+      return parseInt(mois) === moisFiltre + 1 && parseInt(annee) === anneeFiltre;
+    });
 
     let solde = 0;
     const parCompte = {};
     const parCategorie = {};
 
-    filtres.forEach(tx => {
+    filtres.forEach((tx, index) => {
       const sens = tx.type === "sortie" ? -1 : 1;
       solde += sens * tx.montant;
 
@@ -130,8 +126,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
       li.innerHTML = `
         ${tx.type === "entrée" ? "➕" : "➖"} ${tx.montant.toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})
-        <button class="btn-modifier" data-index="${tx.index}" style="float:right; margin-left:5px;">✏️</button>
-        <button class="btn-supprimer" data-index="${tx.index}" style="float:right;">🗑️</button>
+        <button class="btn-modifier" data-index="${index}" style="float:right; margin-left:5px;">✏️</button>
+        <button class="btn-supprimer" data-index="${index}" style="float:right;">🗑️</button>
       `;
       listeTransactions.appendChild(li);
     });
@@ -163,30 +159,31 @@ document.addEventListener('DOMContentLoaded', async function () {
       options: {
         responsive: true,
         plugins: {
-          legend: { position: 'bottom' }
+          legend: {
+            position: 'bottom'
+          }
         }
       }
     });
 
     afficherSoldeCumule();
-    enregistrerTransactionsLocal();
 
-    // boutons suppression
+    // Suppression
     document.querySelectorAll(".btn-supprimer").forEach(btn => {
       btn.addEventListener("click", async () => {
         const index = parseInt(btn.dataset.index);
-        const tx = transactions[index];
-        transactions.splice(index, 1);
-        afficherTransactions();
+        const tx = filtres[index];
+        transactions = transactions.filter(t => t.timestamp !== tx.timestamp);
         await supprimerTransactionDansSheet(tx);
+        afficherTransactions();
       });
     });
 
-    // boutons modification
+    // Modification
     document.querySelectorAll(".btn-modifier").forEach(btn => {
       btn.addEventListener("click", () => {
         const index = parseInt(btn.dataset.index);
-        const tx = transactions[index];
+        const tx = filtres[index];
 
         typeInput.value = tx.type;
         montantInput.value = tx.montant;
@@ -195,6 +192,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         compteInput.value = tx.compte;
         moisAnneeInput.value = tx.date;
         descriptionInput.value = tx.description || "";
+
         indexAModifier = index;
       });
     });
@@ -205,9 +203,11 @@ document.addEventListener('DOMContentLoaded', async function () {
       const sens = tx.type === "sortie" ? -1 : 1;
       return acc + sens * tx.montant;
     }, 0);
+
     totalCumuleDiv.textContent = `💼 Solde total cumulé : ${total.toFixed(2)} €`;
   }
 
+  // === Formulaire ===
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
@@ -218,7 +218,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       sousCategorie: sousCategorieInput.value.trim(),
       compte: compteInput.value,
       date: moisAnneeInput.value,
-      description: descriptionInput.value.trim()
+      description: descriptionInput.value.trim(),
+      timestamp: new Date().toISOString()
     };
 
     if (indexAModifier !== null) {
