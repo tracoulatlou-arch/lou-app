@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const filtres = transactions.map((tx, index) => {
       const [annee, mois] = tx.date.split("-");
       return { ...tx, index, mois: parseInt(mois), annee: parseInt(annee) };
-    }).filter(tx => tx.mois === moisFiltre + 1 && tx.annee === anneeFiltre);
+    }).filter(tx => tx.mois - 1 === moisFiltre && tx.annee === anneeFiltre);
+
 
     let solde = 0;
     const parCompte = {};
