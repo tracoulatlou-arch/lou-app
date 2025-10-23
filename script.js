@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let transactions = [];
   let indexAModifier = null;
 
-  const URL_GOOGLE_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbydqzz_DmP8Fzhrin6OAppdGseHRhS7ClcVNGrA-vFsm14cef9G6IVMH5v-AhgQ2qZ7Yg/exec";
+  const apiUrl = "https://script.google.com/macros/s/AKfycbzCtTYD64KiuDbPhi1k6XXB1DJU0b6zIDuKe7vvAf5yVEUcrzmzlpmxv2QZrrIDWNf_iA/exec";
 
   const form = document.getElementById("form-ajout");
   const typeInput = document.getElementById("type");
@@ -50,20 +50,26 @@ document.addEventListener('DOMContentLoaded', function () {
     moisAnneeInput.value = `${annee}-${mois}`;
   }
 
-  function enregistrerTransactions() {
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+  async function chargerDepuisGoogleSheets() {
+    try {
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      transactions = data.transactions || [];
+      afficherTransactions();
+    } catch (err) {
+      console.error("Erreur de chargement des données Google Sheets :", err);
+    }
   }
 
   function afficherTransactions() {
     const moisFiltre = parseInt(moisSelect.value);
     const anneeFiltre = parseInt(anneeSelect.value);
-
     listeTransactions.innerHTML = "";
 
     const filtres = transactions.map((tx, index) => {
       const [annee, mois] = tx.date.split("-");
       return { ...tx, index, mois: parseInt(mois), annee: parseInt(annee) };
-    }).filter(tx => tx.mois - 1 === moisFiltre && tx.annee === anneeFiltre);
+    }).filter(tx => tx.mois === moisFiltre + 1 && tx.annee === anneeFiltre);
 
     let solde = 0;
     const parCompte = {};
@@ -91,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function () {
       const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
       li.innerHTML = `
         ${tx.type === "entrée" ? "➕" : "➖"} ${tx.montant.toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})
-        <button class="btn-modifier" data-index="${tx.index}" style="float:right; margin-left:5px;">✏️</button>
         <button class="btn-supprimer" data-index="${tx.index}" style="float:right;">🗑️</button>
       `;
       listeTransactions.appendChild(li);
@@ -131,55 +136,22 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
 
-    afficherSoldeCumule();
-
     document.querySelectorAll(".btn-supprimer").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const index = parseInt(btn.dataset.index);
-
-        // Supprimer dans Google Sheets
-        fetch(URL_GOOGLE_APPS_SCRIPT, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ index })
-        });
-
-        transactions.splice(index, 1);
-        enregistrerTransactions();
-        afficherTransactions();
-      });
-    });
-
-    document.querySelectorAll(".btn-modifier").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const index = parseInt(btn.dataset.index);
         const tx = transactions[index];
-
-        typeInput.value = tx.type;
-        montantInput.value = tx.montant;
-        categorieInput.value = tx.categorie;
-        sousCategorieInput.value = tx.sousCategorie || "";
-        compteInput.value = tx.compte;
-        moisAnneeInput.value = tx.date;
-        descriptionInput.value = tx.description || "";
-
-        indexAModifier = index;
+        try {
+          await fetch(apiUrl + `?id=${tx.timestamp}`, { method: "DELETE" });
+          transactions.splice(index, 1);
+          afficherTransactions();
+        } catch (err) {
+          console.error("Erreur lors de la suppression :", err);
+        }
       });
     });
   }
 
-  function afficherSoldeCumule() {
-    const total = transactions.reduce((acc, tx) => {
-      const sens = tx.type === "sortie" ? -1 : 1;
-      return acc + sens * tx.montant;
-    }, 0);
-
-    totalCumuleDiv.textContent = `💼 Solde total cumulé : ${total.toFixed(2)} €`;
-  }
-
-  form.addEventListener("submit", function (e) {
+  form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
     const nouvelle = {
@@ -192,40 +164,19 @@ document.addEventListener('DOMContentLoaded', function () {
       description: descriptionInput.value.trim()
     };
 
-    if (indexAModifier !== null) {
-      transactions[indexAModifier] = nouvelle;
-
-      // Modifier dans Google Sheets
-      fetch(URL_GOOGLE_APPS_SCRIPT, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          ...nouvelle,
-          index: indexAModifier
-        })
-      });
-
-      indexAModifier = null;
-    } else {
-      transactions.push(nouvelle);
-
-      // Ajouter dans Google Sheets
-      fetch(URL_GOOGLE_APPS_SCRIPT, {
+    try {
+      const res = await fetch(apiUrl, {
         method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify(nouvelle)
       });
+      const saved = await res.json();
+      transactions.push(saved);
+      afficherTransactions();
+      form.reset();
+      remplirFiltres();
+    } catch (err) {
+      console.error("Erreur lors de l'envoi :", err);
     }
-
-    enregistrerTransactions();
-    afficherTransactions();
-    form.reset();
-    remplirFiltres();
   });
 
   moisSelect.addEventListener("change", afficherTransactions);
@@ -233,25 +184,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
   remplirSelects();
   remplirFiltres();
-
-  // Chargement initial depuis Google Sheets
-  fetch(URL_GOOGLE_APPS_SCRIPT)
-    .then(response => response.json())
-    .then(data => {
-      transactions = data.map(t => ({
-        type: t.type,
-        montant: parseFloat(t.montant),
-        categorie: t.categorie,
-        sousCategorie: t.sousCategorie,
-        compte: t.compte,
-        date: t.date,
-        description: t.description
-      }));
-
-      enregistrerTransactions();
-      afficherTransactions();
-    })
-    .catch(error => {
-      console.error("Erreur de chargement des données Google Sheets :", error);
-    });
+  chargerDepuisGoogleSheets();
 });
