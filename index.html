@@ -9,6 +9,7 @@
 </head>
 <body>
 
+  <!-- ⚙️ Lien vers la page paramètres -->
   <a id="btn-parametres" href="parametres.html">⚙️ Paramètres</a>
 
   <header>
@@ -18,6 +19,7 @@
     </div>
   </header>
 
+  <!-- 🎯 Vue globale -->
   <div class="row">
     <section id="global">
       <h2>Vue globale</h2>
@@ -37,7 +39,7 @@
     </section>
   </div>
 
-  <!-- ✅ Formulaire avec sous-catégorie -->
+  <!-- ➕ Formulaire d’ajout -->
   <section id="formulaire-ajout">
     <h2>Ajouter une transaction</h2>
     <form id="form-ajout">
@@ -48,27 +50,21 @@
       </select>
 
       <input type="number" step="0.01" id="montant" placeholder="Montant (€)" required />
-
       <select id="categorie" required></select>
-
       <input type="text" id="sous-categorie" placeholder="Sous-catégorie (ex: Lidl)" />
-
       <select id="compte" required></select>
-
       <input type="month" id="mois-annee" required />
-
       <input type="text" id="description" placeholder="Description (facultatif)" />
-
       <button type="submit">Ajouter</button>
     </form>
   </section>
 
+  <!-- 📜 Liste des transactions -->
   <section id="transactions">
     <h2>Transactions du mois sélectionné</h2>
     <ul id="liste-transactions"></ul>
   </section>
 
-  <!-- ✅ Chargement du JavaScript -->
   <script src="script.js"></script>
 </body>
 </html>
