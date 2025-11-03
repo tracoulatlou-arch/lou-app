@@ -1,215 +1,212 @@
-/* ------------------------------
-   Minimal Navy/Gray theme
-   Titres : Unifraktur (style "𝔼𝕩𝕖𝕞𝕡𝕝𝕖")
-   Texte  : IBM Plex Mono (style "𝙴𝚡𝚎𝚖𝚙𝚕𝚎")
----------------------------------*/
+/* ================================
+   STYLE GLOBAL - Bleu nuit / Violet clair
+   Simple, prêt à l'emploi 💙
+   Fond : #050F2A
+   Titres : #F2FDFF
+   Cases : #7BBBFF
+   Décor : #B8A9FF
+   Titres = Space Grotesk
+   Texte  = Inter
+==================================*/
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=UnifrakturCook:wght@700&display=swap');
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap');
 
-/* Palette & tokens */
-:root{
-  --navy: #0b2545;           /* bleu marine principal */
-  --navy-700:#0d1b2a;
-  --ink:  #111215;           /* quasi noir pour le texte */
-  --muted:#6b7280;           /* gris moyen (labels/secondaire) */
-  --line: #e5e7eb;           /* gris clair (traits) */
-  --bg:   #f8fafc;           /* fond clair */
-  --card: #ffffff;           /* fond cartes/sections */
-  --accent:#1f3a5f;          /* hover/états actifs */
-  --ok:   #1d4ed8;           /* bleu action (boutons) */
-  --ok-700:#1e40af;
-
+/* --- Couleurs principales --- */
+:root {
+  --bg: #050F2A;       /* fond principal */
+  --text: #F2FDFF;     /* texte principal clair */
+  --case: #7BBBFF;     /* couleur des 4 cases */
+  --decor: #B8A9FF;    /* éléments décoratifs */
+  --border: rgba(255,255,255,0.15);
   --radius: 12px;
-  --shadow: 0 6px 18px rgba(17,18,21,0.06);
+  --shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
-/* Reset léger */
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-img, canvas, svg, video { max-width: 100%; display: block; }
+/* --- Base --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-/* Corps */
-body{
-  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  margin: 0;                 /* bordures propres */
-  padding: 24px;
+body {
   background: var(--bg);
-  color: var(--ink);
-  line-height: 1.5;
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+  padding: 25px;
+  line-height: 1.6;
 }
 
-/* Titres */
-header h1,
-h1, h2, h3{
-  font-family: "UnifrakturCook", "Old English Text MT", "UnifrakturMaguntia", serif;
-  letter-spacing: .5px;
-  color: var(--navy);
-  margin: 0 0 12px 0;
+/* --- Titres --- */
+h1, h2, h3, header h1 {
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text);
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
 }
-header h1{ font-size: clamp(28px, 4vw, 40px); }
-h2{ font-size: clamp(22px, 3vw, 28px); }
-h3{ font-size: clamp(18px, 2.4vw, 22px); }
 
-/* Lien paramètres (bouton en haut à gauche) */
-#btn-parametres{
+header h1 {
+  font-size: clamp(28px, 4vw, 42px);
+}
+
+h2 {
+  font-size: clamp(22px, 3vw, 28px);
+  color: var(--decor);
+}
+
+h3 {
+  font-size: clamp(18px, 2.5vw, 22px);
+  color: var(--case);
+}
+
+/* --- Bouton paramètres --- */
+#btn-parametres {
   position: absolute;
   top: 20px;
   left: 20px;
-  font-size: .95rem;
+  background: transparent;
+  border: 1px solid var(--decor);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 20px;
   text-decoration: none;
-  background: var(--card);
-  border: 1px solid var(--line);
-  padding: 8px 12px;
-  border-radius: 10px;
-  color: var(--navy);
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  transition: all 0.2s ease;
 }
-#btn-parametres:hover{ transform: translateY(-1px); border-color: #c7cbd3; }
-#btn-parametres:focus-visible{ outline: 2px solid var(--navy); outline-offset: 2px; }
+#btn-parametres:hover {
+  background: var(--decor);
+  color: var(--bg);
+}
 
-/* Grille principale */
-.row{
+/* --- Grille principale --- */
+.row {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  margin: 70px 0 30px; /* espace sous header/bouton */
+  margin-top: 70px;
 }
 
-/* Cartes / sections */
-section{
-  background: var(--card);
-  padding: 16px;
+/* --- Les 4 "cases" principales --- */
+section {
+  background: var(--case);
+  color: #041226;
   border-radius: var(--radius);
+  padding: 20px;
   box-shadow: var(--shadow);
-  border: 1px solid var(--line);
-}
-
-/* Panneaux largeur flexible */
-#global, #graphique{
   flex: 1;
   min-width: 320px;
 }
 
-/* Graphique responsive */
-#graphique canvas{
+/* --- Section décorative --- */
+section.decor {
+  background: var(--decor);
+  color: #050F2A;
+}
+
+/* --- Graphique --- */
+#graphique canvas {
   width: 100% !important;
   height: auto !important;
-  max-width: 420px;
+  max-width: 400px;
   margin: 0 auto;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
 }
 
-/* Formulaires */
-form{
+/* --- Formulaires --- */
+form {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
-form select,
-form input{
+form input,
+form select {
   flex: 1 1 180px;
-  padding: 10px 12px;
-  font-size: 0.95rem;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--ink);
-  transition: border-color .12s ease, box-shadow .12s ease;
-}
-form select:focus,
-form input:focus{
-  outline: none;
-  border-color: var(--navy);
-  box-shadow: 0 0 0 3px rgba(11,37,69,.12);
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #F2FDFF;
+  color: #050F2A;
+  font-size: 1rem;
 }
 
-form button{
-  padding: 10px 18px;
-  font-size: 0.95rem;
-  background-color: var(--ok);
-  color: #fff;
-  border: 1px solid transparent;
-  border-radius: 12px;
+form button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--decor);
+  color: #050F2A;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform .08s ease, background-color .12s ease, box-shadow .12s ease;
+  transition: 0.2s;
 }
-form button:hover{ background-color: var(--ok-700); transform: translateY(-1px); }
-form button:active{ transform: translateY(0); }
-form button:focus-visible{ outline: 2px solid var(--navy); outline-offset: 2px; }
+form button:hover {
+  background: var(--text);
+  color: var(--bg);
+}
 
-/* Listes */
-ul{ list-style: none; padding: 0; margin: 0; }
+/* --- Listes --- */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
-ul li{
+ul li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  margin: 8px 0;
+  background: rgba(255,255,255,0.8);
+  color: #050F2A;
   padding: 10px 12px;
-  background: #f3f4f6;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  font-size: 0.95rem;
+  border-radius: 8px;
+  margin-bottom: 8px;
 }
 
-ul li .meta{
-  color: var(--muted);
-  font-size: .9rem;
-}
-
-ul li button{
-  background: transparent;
-  border: 1px solid var(--line);
+ul li button {
+  background: var(--decor);
+  border: none;
+  border-radius: 8px;
+  color: #050F2A;
   padding: 6px 10px;
-  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.9rem;
-  color: var(--navy);
-  transition: background .12s ease, border-color .12s ease, transform .08s ease;
+  transition: 0.2s;
 }
-ul li button:hover{ background: #eef2f7; border-color: #c7cbd3; transform: translateY(-1px); }
-ul li button:focus-visible{ outline: 2px solid var(--navy); outline-offset: 2px; }
+ul li button:hover {
+  background: var(--bg);
+  color: var(--text);
+}
 
-/* KPIs */
+/* --- Totaux --- */
 #solde-total,
-#total-cumule{
-  font-weight: 600;
+#total-cumule {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--decor);
   margin-top: 10px;
-  font-size: 1.05rem;
-  color: var(--navy);
 }
 
-/* Comptes */
-#comptes-list li{
+/* --- Comptes --- */
+#comptes-list li {
+  background: rgba(255,255,255,0.85);
+  color: #050F2A;
+  border-radius: 8px;
+  padding: 10px;
   margin-bottom: 10px;
-  padding: 12px;
-  background: #f1f5f9;
-  border-radius: 10px;
-  border: 1px solid var(--line);
 }
 
-/* Petits helpers */
-.muted{ color: var(--muted); }
-.divider{
-  height: 1px; background: var(--line);
-  margin: 12px 0;
+/* --- Petits détails --- */
+a {
+  color: var(--decor);
 }
-
-/* Mode sombre (automatique si l'OS est en dark) */
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#0f141b;
-    --card:#121923;
-    --line:#1f2a37;
-    --ink:#e5e7eb;
-    --muted:#94a3b8;
-    --shadow: 0 8px 24px rgba(0,0,0,.35);
-  }
-  #btn-parametres{ background: var(--card); color: var(--ink); }
-  form select, form input{ background:#0f1720; color: var(--ink); }
-  ul li{ background:#16202b; }
-  #graphique canvas{ filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+a:hover {
+  text-decoration: underline;
+}
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 15px 0;
 }
