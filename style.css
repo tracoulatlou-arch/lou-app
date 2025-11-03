@@ -235,3 +235,16 @@ header h1,
 [data-role="solde-total"] {
   color: #B8A9FF !important;
 }
+/* === Overrides ciblés (violet) === */
+header h1 {
+  color: #B8A9FF !important;    /* 📊 Suivi financier */
+}
+
+#total-cumule {
+  color: #B8A9FF !important;    /* 💼 Solde total cumulé : ... € */
+}
+
+/* On garde les titres à l’intérieur des cases en bleu nuit */
+section h1, section h2, section h3 {
+  color: #050F2A !important;
+}
