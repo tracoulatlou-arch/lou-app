@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // 🔹 mêmes valeurs par défaut que ta page Paramètres
   const getCategories = () =>
     getStoredArray("categories", ["Loyer", "Courses", "Essence", "Assurance", "Sorties", "Salaire", "Autres"]);
 
@@ -65,19 +64,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function remplirFiltres() {
-    // Mois
     moisSelect.innerHTML = [...Array(12).keys()]
       .map(i => `<option value="${i}">${getMoisNom(i)}</option>`).join('');
-    // Années (10 dernières)
+
     const anneeActuelle = new Date().getFullYear();
     anneeSelect.innerHTML = [...Array(10).keys()]
       .map(i => `<option value="${anneeActuelle - i}">${anneeActuelle - i}</option>`).join('');
 
-    // Valeurs courantes
     moisSelect.value = new Date().getMonth();
     anneeSelect.value = new Date().getFullYear();
 
-    // Valeur par défaut pour le champ "mois-annee" (AAAA-MM)
     const now = new Date();
     const mois = String(now.getMonth() + 1).padStart(2, '0');
     const annee = now.getFullYear();
@@ -98,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const anneeFiltre = parseInt(anneeSelect.value, 10);
     listeTransactions.innerHTML = "";
 
-    // On normalise les transactions du mois sélectionné
     const filtres = transactions
       .map((tx, index) => {
         const [annee, mois] = String(tx.date || "").split("-");
@@ -112,7 +107,37 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre);
 
-    // Agrégations
+    const entrees = filtres.filter(tx => tx.type === "entrée");
+    const sorties = filtres.filter(tx => tx.type === "sortie");
+
+    const container = document.createElement("div");
+    container.className = "transactions-grid";
+
+    const colSorties = document.createElement("div");
+    colSorties.className = "col-sorties";
+    colSorties.innerHTML = "<h3>➖ Sorties</h3>";
+
+    const colEntrees = document.createElement("div");
+    colEntrees.className = "col-entrees";
+    colEntrees.innerHTML = "<h3>➕ Entrées</h3>";
+
+    function makeItem(tx) {
+      const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
+      const li = document.createElement("li");
+      li.innerHTML = `
+        ${tx.montant.toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})
+        <button class="btn-supprimer" data-timestamp="${tx.timestamp}" style="float:right;">🗑️</button>
+      `;
+      return li;
+    }
+
+    sorties.forEach(tx => colSorties.appendChild(makeItem(tx)));
+    entrees.forEach(tx => colEntrees.appendChild(makeItem(tx)));
+
+    container.appendChild(colSorties);
+    container.appendChild(colEntrees);
+    listeTransactions.appendChild(container);
+
     let solde = 0;
     const parCompte = {};
     const parCategorie = {};
@@ -121,43 +146,28 @@ document.addEventListener("DOMContentLoaded", () => {
       const sens = tx.type === "sortie" ? -1 : 1;
       solde += sens * tx.montant;
 
-      if (!parCompte[tx.compte]) {
-        parCompte[tx.compte] = { entrees: 0, sorties: 0 };
-      }
-
-      if (tx.type === "entrée") {
-        parCompte[tx.compte].entrees += tx.montant;
-      } else {
+      if (!parCompte[tx.compte]) parCompte[tx.compte] = { entrees: 0, sorties: 0 };
+      if (tx.type === "entrée") parCompte[tx.compte].entrees += tx.montant;
+      else {
         parCompte[tx.compte].sorties += tx.montant;
         parCategorie[tx.categorie] = (parCategorie[tx.categorie] || 0) + tx.montant;
       }
-
-      const li = document.createElement("li");
-      const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
-      li.innerHTML = `
-        ${tx.type === "entrée" ? "➕" : "➖"} ${tx.montant.toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})
-        <button class="btn-supprimer" data-timestamp="${tx.timestamp}" style="float:right;">🗑️</button>
-      `;
-      listeTransactions.appendChild(li);
     });
 
-    // Solde total (de la période filtrée)
     soldeTotalDiv.textContent = `Solde total : ${solde.toFixed(2)} €`;
 
-    // Comptes (liste)
     comptesList.innerHTML = Object.entries(parCompte).map(([compte, data]) => {
       const soldeCompte = (data.entrees || 0) - (data.sorties || 0);
       return `
         <li>
           <strong>${compte}</strong><br>
-          ➕ Entrées : ${ (data.entrees || 0).toFixed(2) } €<br>
-          ➖ Sorties : ${ (data.sorties || 0).toFixed(2) } €<br>
-          ⚖️ Solde : ${ soldeCompte.toFixed(2) } €
+          ➕ Entrées : ${(data.entrees || 0).toFixed(2)} €<br>
+          ➖ Sorties : ${(data.sorties || 0).toFixed(2)} €<br>
+          ⚖️ Solde : ${soldeCompte.toFixed(2)} €
         </li>
       `;
     }).join('');
 
-    // Camembert
     if (camembertChart) camembertChart.destroy();
     camembertChart = new Chart(camembert, {
       type: "pie",
@@ -168,26 +178,20 @@ document.addEventListener("DOMContentLoaded", () => {
           backgroundColor: PIE_COLORS
         }]
       },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom' } }
-      }
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
     });
 
-    // Solde total cumulé (toutes transactions)
     const totalCumule = transactions.reduce((acc, tx) => {
       const sens = tx.type === "sortie" ? -1 : 1;
       return acc + sens * parseFloat(tx.montant || 0);
     }, 0);
     totalCumuleDiv.textContent = `💼 Solde total cumulé : ${totalCumule.toFixed(2)} €`;
 
-    // Suppression
     document.querySelectorAll(".btn-supprimer").forEach(btn => {
       btn.addEventListener("click", async () => {
         const timestamp = btn.dataset.timestamp;
         const ok = confirm("Supprimer définitivement cette transaction ?");
         if (!ok) return;
-
         await fetch(`${sheetBestURL}/timestamp/${encodeURIComponent(timestamp)}`, { method: 'DELETE' });
         await chargerTransactions();
       });
@@ -218,20 +222,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     form.reset();
-    // Réinitialise le champ mois-année à la période courante
     const now = new Date();
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     moisAnneeInput.value = `${now.getFullYear()}-${mm}`;
-
     await chargerTransactions();
   });
 
-  // Changement de période
   moisSelect.addEventListener("change", afficherTransactions);
   anneeSelect.addEventListener("change", afficherTransactions);
 
-  // 🚀 Démarrage
-  remplirSelects();   // ⬅️ charge catégories & comptes depuis localStorage
+  remplirSelects();
   remplirFiltres();
   chargerTransactions();
 });

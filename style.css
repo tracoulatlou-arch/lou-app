@@ -1,20 +1,12 @@
 /* ================================
    STYLE GLOBAL - Bleu nuit / Violet clair
-   Fond : #050F2A
-   Titres principaux (header h1 + total cumulé) : #B8A9FF
-   Titres dans cases : #050F2A
-   Cases : #7BBBFF | Décor : #B8A9FF
-   Titres = Space Grotesk | Texte = Inter
 ==================================*/
-
-/* Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap');
 
-/* Couleurs & tokens */
 :root{
   --bg:#050F2A;
   --text:#F2FDFF;
-  --title:#B8A9FF;   /* utilisé pour header h1 & total cumulé */
+  --title:#B8A9FF;
   --case:#7BBBFF;
   --decor:#B8A9FF;
   --border:rgba(255,255,255,.15);
@@ -22,8 +14,8 @@
   --shadow:0 4px 20px rgba(0,0,0,.3);
 }
 
-/* Base */
-*{ box-sizing:border-box; margin:0; padding:0; }
+/* --- Base --- */
+*{box-sizing:border-box;margin:0;padding:0;}
 body{
   background:var(--bg);
   color:var(--text);
@@ -32,108 +24,94 @@ body{
   line-height:1.6;
 }
 
-/* Titres généraux */
-h1, h2, h3, header h1{
+/* --- Titres --- */
+h1,h2,h3,header h1{
   font-family:"Space Grotesk",sans-serif;
   letter-spacing:.5px;
   margin-bottom:10px;
   font-weight:700;
 }
-/* tailles */
-header h1{ font-size:clamp(28px,4vw,42px); }
-h2{ font-size:clamp(22px,3vw,28px); }
-h3{ font-size:clamp(18px,2.5vw,22px); }
+header h1{font-size:clamp(28px,4vw,42px);}
+h2{font-size:clamp(22px,3vw,28px);}
+h3{font-size:clamp(18px,2.5vw,22px);}
+header h1,#total-cumule{color:var(--title);}
+section h1,section h2,section h3{color:#050F2A;}
 
-/* Couleurs titres ciblées */
-header h1{ color:var(--title); }      /* 📊 Suivi financier (violet) */
-#total-cumule{ color:var(--title); }  /* 💼 Solde total cumulé (violet) */
-
-/* Titres dans les cases (foncés comme le fond) */
-section h1, section h2, section h3{ color:#050F2A; }
-
-/* Bouton paramètres */
+/* --- Bouton paramètres --- */
 #btn-parametres{
-  position:absolute; top:20px; left:20px;
-  background:transparent; border:1px solid var(--decor);
-  color:var(--text); padding:8px 14px; border-radius:20px;
-  text-decoration:none; transition:.2s;
+  position:absolute;top:20px;left:20px;
+  background:transparent;border:1px solid var(--decor);
+  color:var(--text);padding:8px 14px;border-radius:20px;
+  text-decoration:none;transition:.2s;
 }
-#btn-parametres:hover{ background:var(--decor); color:var(--bg); }
+#btn-parametres:hover{background:var(--decor);color:var(--bg);}
 
-/* Grille des cases du haut + espacements réguliers */
+/* --- Cases principales --- */
 .row{
-  display:flex; flex-wrap:wrap; gap:40px;   /* espace H + V entre les 2 cases */
-  justify-content:center;
-  margin-top:40px;                           /* espace sous le header */
+  display:flex;flex-wrap:wrap;gap:40px;
+  justify-content:center;margin-top:40px;
 }
-
-/* Cases */
 section{
-  background:var(--case);
-  color:#041226;
-  border-radius:var(--radius);
-  padding:25px;               /* un peu plus d’air à l’intérieur */
-  box-shadow:var(--shadow);
-  flex:1; min-width:320px;
+  background:var(--case);color:#041226;
+  border-radius:var(--radius);padding:25px;
+  box-shadow:var(--shadow);flex:1;min-width:320px;
 }
+.row+section,section+section{margin-top:40px;}
+section.decor{background:var(--decor);color:#050F2A;}
 
-/* Espace vertical entre les sections en dessous de .row */
-.row + section{ margin-top:40px; }           /* espace entre la rangée du haut et la case suivante */
-section + section{ margin-top:40px; }        /* espace régulier entre les cases empilées */
-
-/* Section décor optionnelle */
-section.decor{ background:var(--decor); color:#050F2A; }
-
-/* Graphique */
+/* --- Graphique --- */
 #graphique canvas{
-  width:100% !important; height:auto !important;
-  max-width:400px; margin:0 auto; border-radius:10px;
-  background:rgba(255,255,255,.05); border:1px solid var(--border);
+  width:100%!important;height:auto!important;
+  max-width:400px;margin:0 auto;border-radius:10px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
 }
 
-/* Formulaires */
-form{ display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
-form input, form select{
-  flex:1 1 180px; padding:10px;
-  border:1px solid var(--border); border-radius:8px;
-  background:#F2FDFF; color:#050F2A; font-size:1rem;
+/* --- Formulaire --- */
+form{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+form input,form select{
+  flex:1 1 180px;padding:10px;
+  border:1px solid var(--border);border-radius:8px;
+  background:#F2FDFF;color:#050F2A;font-size:1rem;
 }
 form button{
-  padding:10px 20px; border:none; border-radius:8px;
-  background:var(--decor); color:#050F2A; font-weight:600;
-  cursor:pointer; transition:.2s;
+  padding:10px 20px;border:none;border-radius:8px;
+  background:var(--decor);color:#050F2A;font-weight:600;
+  cursor:pointer;transition:.2s;
 }
-form button:hover{ background:var(--text); color:var(--bg); }
+form button:hover{background:var(--text);color:var(--bg);}
 
-/* Listes */
-ul{ list-style:none; }
-ul li{
-  display:flex; justify-content:space-between; align-items:center;
-  background:rgba(255,255,255,.8); color:#050F2A;
-  padding:10px 12px; border-radius:8px; margin-bottom:8px;
-}
-ul li button{
-  background:var(--decor); border:none; border-radius:8px;
-  color:#050F2A; padding:6px 10px; cursor:pointer; transition:.2s;
-}
-ul li button:hover{ background:var(--bg); color:var(--text); }
+/* --- Totaux --- */
+#solde-total{font-weight:700;font-size:1.1rem;color:#050F2A;margin-top:10px;}
+#total-cumule{font-weight:700;font-size:1.1rem;margin-top:10px;}
 
-/* Totaux (spécifiques) */
-#solde-total{                 /* Solde total dans la case "Vue globale" */
-  font-weight:700; font-size:1.1rem; color:#050F2A; margin-top:10px;
-}
-/* le total cumulé est déjà violet via #total-cumule plus haut */
-#total-cumule{
-  font-weight:700; font-size:1.1rem; margin-top:10px;
-}
-
-/* Comptes */
+/* --- Comptes --- */
 #comptes-list li{
-  background:rgba(255,255,255,.85); color:#050F2A;
-  border-radius:8px; padding:10px; margin-bottom:10px;
+  background:rgba(255,255,255,.85);color:#050F2A;
+  border-radius:8px;padding:10px;margin-bottom:10px;
 }
 
-/* Liens & séparateurs */
-a{ color:var(--decor); }
-a:hover{ text-decoration:underline; }
-.divider{ height:1px; background:var(--border); margin:15px 0; }
+/* --- Transactions à deux colonnes --- */
+.transactions-grid{
+  display:flex;justify-content:space-between;gap:20px;
+}
+.col-sorties,.col-entrees{
+  flex:1;border-radius:10px;padding:10px;
+}
+.col-sorties{background:#ffdcdc;}
+.col-entrees{background:#d5ffe0;}
+.col-sorties h3,.col-entrees h3{text-align:center;color:#050F2A;margin-bottom:10px;}
+.col-sorties li,.col-entrees li{
+  list-style:none;background:transparent;color:#050F2A;
+  padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05);
+}
+.col-sorties li:last-child,.col-entrees li:last-child{border-bottom:none;}
+.btn-supprimer{
+  background:var(--decor);border:none;border-radius:6px;
+  color:#050F2A;padding:4px 8px;margin-left:6px;cursor:pointer;
+  transition:.2s;
+}
+.btn-supprimer:hover{background:#ff4b4b;color:white;}
+
+/* --- Liens --- */
+a{color:var(--decor);}
+a:hover{text-decoration:underline;}
