@@ -2,7 +2,7 @@
    STYLE GLOBAL - Bleu nuit / Violet clair
    Simple, prêt à l'emploi 💙
    Fond : #050F2A
-   Titres : #F2FDFF
+   Titres : #050F2A
    Cases : #7BBBFF
    Décor : #B8A9FF
    Titres = Space Grotesk
@@ -15,7 +15,8 @@
 /* --- Couleurs principales --- */
 :root {
   --bg: #050F2A;       /* fond principal */
-  --text: #F2FDFF;     /* texte principal clair */
+  --text: #F2FDFF;     /* texte clair */
+  --title: #050F2A;    /* couleur des titres principaux */
   --case: #7BBBFF;     /* couleur des 4 cases */
   --decor: #B8A9FF;    /* éléments décoratifs */
   --border: rgba(255,255,255,0.15);
@@ -38,12 +39,13 @@ body {
   line-height: 1.6;
 }
 
-/* --- Titres --- */
+/* --- Titres généraux --- */
 h1, h2, h3, header h1 {
   font-family: "Space Grotesk", sans-serif;
-  color: var(--text);
+  color: var(--title);
   letter-spacing: 0.5px;
   margin-bottom: 10px;
+  font-weight: 700;
 }
 
 header h1 {
@@ -52,19 +54,17 @@ header h1 {
 
 h2 {
   font-size: clamp(22px, 3vw, 28px);
-  color: var(--decor);
 }
 
 h3 {
   font-size: clamp(18px, 2.5vw, 22px);
-  color: var(--case);
 }
 
-/* --- Titres à l’intérieur des cases --- */
+/* --- Titres dans les cases (restent foncés) --- */
 section h1,
 section h2,
 section h3 {
-  color: #050F2A; /* même couleur que le fond */
+  color: var(--title);
 }
 
 /* --- Bouton paramètres --- */
@@ -192,7 +192,7 @@ ul li button:hover {
 #total-cumule {
   font-weight: 700;
   font-size: 1.1rem;
-  color: var(--decor);
+  color: var(--title);
   margin-top: 10px;
 }
 
