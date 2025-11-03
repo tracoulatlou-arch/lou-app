@@ -60,6 +60,13 @@ h3 {
   color: var(--case);
 }
 
+/* --- Titres à l’intérieur des cases --- */
+section h1,
+section h2,
+section h3 {
+  color: #050F2A; /* même couleur que le fond */
+}
+
 /* --- Bouton paramètres --- */
 #btn-parametres {
   position: absolute;
@@ -209,10 +216,4 @@ a:hover {
   height: 1px;
   background: var(--border);
   margin: 15px 0;
-}
-/* --- Titres à l'intérieur des cases --- */
-section h1,
-section h2,
-section h3 {
-  color: #050F2A; /* même couleur que le fond */
 }
