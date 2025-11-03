@@ -253,3 +253,19 @@ section h3,
 #solde-total {
   color: #050F2A !important;
 }
+/* === Espacement équilibré autour des cases bleues === */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px; /* espace horizontal ET vertical entre les cases */
+  justify-content: center;
+}
+
+section {
+  flex: 1;
+  min-width: 320px;
+  margin: 0;            /* on retire les anciens marges */
+  padding: 25px;        /* un peu plus de respiration à l’intérieur */
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
