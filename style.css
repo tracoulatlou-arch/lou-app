@@ -1,8 +1,8 @@
 /* ================================
    STYLE GLOBAL - Bleu nuit / Violet clair
-   Simple, prêt à l'emploi 💙
    Fond : #050F2A
-   Titres : #050F2A
+   Titres principaux : #B8A9FF
+   Titres dans cases : #050F2A
    Cases : #7BBBFF
    Décor : #B8A9FF
    Titres = Space Grotesk
@@ -16,8 +16,8 @@
 :root {
   --bg: #050F2A;       /* fond principal */
   --text: #F2FDFF;     /* texte clair */
-  --title: #050F2A;    /* couleur des titres principaux */
-  --case: #7BBBFF;     /* couleur des 4 cases */
+  --title: #B8A9FF;    /* 📊 Suivi financier + 💼 Solde cumulé */
+  --case: #7BBBFF;     /* 4 cases */
   --decor: #B8A9FF;    /* éléments décoratifs */
   --border: rgba(255,255,255,0.15);
   --radius: 12px;
@@ -39,10 +39,10 @@ body {
   line-height: 1.6;
 }
 
-/* --- Titres généraux --- */
+/* --- Titres --- */
 h1, h2, h3, header h1 {
   font-family: "Space Grotesk", sans-serif;
-  color: var(--title);
+  color: var(--title);  /* violet clair */
   letter-spacing: 0.5px;
   margin-bottom: 10px;
   font-weight: 700;
@@ -60,11 +60,11 @@ h3 {
   font-size: clamp(18px, 2.5vw, 22px);
 }
 
-/* --- Titres dans les cases (restent foncés) --- */
+/* --- Titres à l’intérieur des cases --- */
 section h1,
 section h2,
 section h3 {
-  color: var(--title);
+  color: #050F2A; /* bleu nuit (même couleur que fond) */
 }
 
 /* --- Bouton paramètres --- */
@@ -192,7 +192,7 @@ ul li button:hover {
 #total-cumule {
   font-weight: 700;
   font-size: 1.1rem;
-  color: var(--title);
+  color: var(--title);  /* violet clair pour 💼 Solde total cumulé */
   margin-top: 10px;
 }
 
