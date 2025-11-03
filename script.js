@@ -1,10 +1,18 @@
-// ✅ Lien vers ton Sheet.best (valide et autorisé)
+// ✅ URL Sheet.best (la tienne)
 const sheetBestURL = "https://api.sheetbest.com/sheets/dfb86ada-81c7-4a1c-8bc4-544c2281c911";
 
 document.addEventListener("DOMContentLoaded", () => {
   let transactions = [];
-  let indexAModifier = null;
+  let camembertChart;
 
+  // 🎨 15 couleurs (bleus/violets) pour le camembert
+  const PIE_COLORS = [
+    "#050F2A", "#0A1A45", "#0F255F", "#14307A", "#183A95",
+    "#1D45AF", "#224FCA", "#275AE4", "#2E64FF", "#4A6EFF",
+    "#6A78FF", "#8A82FF", "#A28CFF", "#B8A9FF", "#7BBBFF"
+  ];
+
+  // 🔌 Sélecteurs DOM
   const form = document.getElementById("form-ajout");
   const typeInput = document.getElementById("type");
   const montantInput = document.getElementById("montant");
@@ -20,37 +28,65 @@ document.addEventListener("DOMContentLoaded", () => {
   const comptesList = document.getElementById("comptes-list");
   const totalCumuleDiv = document.getElementById("total-cumule");
   const camembert = document.getElementById("camembert");
-  let camembertChart;
 
-  const categories = ["Courses", "Loyer", "Essence", "Sortie", "Salaire", "Autre"];
-  const comptes = ["Compte courant", "Épargne", "Revolut", "Trade Republic"];
+  /* -----------------------------
+     Utils : LocalStorage & Selects
+  ------------------------------*/
+  const getStoredArray = (key, fallback) => {
+    try {
+      const raw = localStorage.getItem(key);
+      const arr = raw ? JSON.parse(raw) : null;
+      return Array.isArray(arr) ? arr : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  // 🔹 mêmes valeurs par défaut que ta page Paramètres
+  const getCategories = () =>
+    getStoredArray("categories", ["Loyer", "Courses", "Essence", "Assurance", "Sorties", "Salaire", "Autres"]);
+
+  const getComptes = () =>
+    getStoredArray("comptes", ["Compte Courant", "Épargne IPEL", "Épargne IVA", "Révolut", "Trade Republic"]);
 
   function remplirSelects() {
+    const categories = getCategories();
+    const comptes = getComptes();
+
     categorieInput.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
     compteInput.innerHTML = comptes.map(c => `<option value="${c}">${c}</option>`).join('');
   }
 
+  /* -----------------------------
+     Filtres (mois / année / date)
+  ------------------------------*/
   function getMoisNom(index) {
     return ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][index];
   }
 
   function remplirFiltres() {
-    moisSelect.innerHTML = [...Array(12).keys()].map(i =>
-      `<option value="${i}">${getMoisNom(i)}</option>`
-    ).join('');
+    // Mois
+    moisSelect.innerHTML = [...Array(12).keys()]
+      .map(i => `<option value="${i}">${getMoisNom(i)}</option>`).join('');
+    // Années (10 dernières)
     const anneeActuelle = new Date().getFullYear();
-    anneeSelect.innerHTML = [...Array(10).keys()].map(i =>
-      `<option value="${anneeActuelle - i}">${anneeActuelle - i}</option>`
-    ).join('');
+    anneeSelect.innerHTML = [...Array(10).keys()]
+      .map(i => `<option value="${anneeActuelle - i}">${anneeActuelle - i}</option>`).join('');
+
+    // Valeurs courantes
     moisSelect.value = new Date().getMonth();
     anneeSelect.value = new Date().getFullYear();
 
+    // Valeur par défaut pour le champ "mois-annee" (AAAA-MM)
     const now = new Date();
     const mois = String(now.getMonth() + 1).padStart(2, '0');
     const annee = now.getFullYear();
     moisAnneeInput.value = `${annee}-${mois}`;
   }
 
+  /* -----------------------------
+     Chargement & affichage
+  ------------------------------*/
   async function chargerTransactions() {
     const res = await fetch(sheetBestURL);
     transactions = await res.json();
@@ -58,17 +94,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function afficherTransactions() {
-    const moisFiltre = parseInt(moisSelect.value);
-    const anneeFiltre = parseInt(anneeSelect.value);
+    const moisFiltre = parseInt(moisSelect.value, 10);
+    const anneeFiltre = parseInt(anneeSelect.value, 10);
     listeTransactions.innerHTML = "";
 
+    // On normalise les transactions du mois sélectionné
     const filtres = transactions
       .map((tx, index) => {
-        const [annee, mois] = tx.date.split("-");
-        return { ...tx, index, mois: parseInt(mois), annee: parseInt(annee), montant: parseFloat(tx.montant) };
+        const [annee, mois] = String(tx.date || "").split("-");
+        return {
+          ...tx,
+          index,
+          mois: parseInt(mois, 10),
+          annee: parseInt(annee, 10),
+          montant: parseFloat(tx.montant || 0)
+        };
       })
-      .filter(tx => tx.mois === moisFiltre + 1 && tx.annee === anneeFiltre);
+      .filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre);
 
+    // Agrégations
     let solde = 0;
     const parCompte = {};
     const parCategorie = {};
@@ -92,26 +136,28 @@ document.addEventListener("DOMContentLoaded", () => {
       const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
       li.innerHTML = `
         ${tx.type === "entrée" ? "➕" : "➖"} ${tx.montant.toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})
-        <button class="btn-modifier" data-timestamp="${tx.timestamp}" style="float:right; margin-left:5px;">✏️</button>
         <button class="btn-supprimer" data-timestamp="${tx.timestamp}" style="float:right;">🗑️</button>
       `;
       listeTransactions.appendChild(li);
     });
 
+    // Solde total (de la période filtrée)
     soldeTotalDiv.textContent = `Solde total : ${solde.toFixed(2)} €`;
 
+    // Comptes (liste)
     comptesList.innerHTML = Object.entries(parCompte).map(([compte, data]) => {
-      const soldeCompte = data.entrees - data.sorties;
+      const soldeCompte = (data.entrees || 0) - (data.sorties || 0);
       return `
         <li>
           <strong>${compte}</strong><br>
-          ➕ Entrées : ${data.entrees.toFixed(2)} €<br>
-          ➖ Sorties : ${data.sorties.toFixed(2)} €<br>
-          ⚖️ Solde : ${soldeCompte.toFixed(2)} €
+          ➕ Entrées : ${ (data.entrees || 0).toFixed(2) } €<br>
+          ➖ Sorties : ${ (data.sorties || 0).toFixed(2) } €<br>
+          ⚖️ Solde : ${ soldeCompte.toFixed(2) } €
         </li>
       `;
     }).join('');
 
+    // Camembert
     if (camembertChart) camembertChart.destroy();
     camembertChart = new Chart(camembert, {
       type: "pie",
@@ -119,37 +165,39 @@ document.addEventListener("DOMContentLoaded", () => {
         labels: Object.keys(parCategorie),
         datasets: [{
           data: Object.values(parCategorie),
-          backgroundColor: ['#f87171', '#facc15', '#4ade80', '#60a5fa', '#c084fc', '#fb923c']
+          backgroundColor: PIE_COLORS
         }]
       },
       options: {
         responsive: true,
-        plugins: {
-          legend: {
-            position: 'bottom'
-          }
-        }
+        plugins: { legend: { position: 'bottom' } }
       }
     });
 
-    totalCumuleDiv.textContent = `💼 Solde total cumulé : ${transactions.reduce((acc, tx) => {
+    // Solde total cumulé (toutes transactions)
+    const totalCumule = transactions.reduce((acc, tx) => {
       const sens = tx.type === "sortie" ? -1 : 1;
-      return acc + sens * parseFloat(tx.montant);
-    }, 0).toFixed(2)} €`;
+      return acc + sens * parseFloat(tx.montant || 0);
+    }, 0);
+    totalCumuleDiv.textContent = `💼 Solde total cumulé : ${totalCumule.toFixed(2)} €`;
 
     // Suppression
     document.querySelectorAll(".btn-supprimer").forEach(btn => {
       btn.addEventListener("click", async () => {
         const timestamp = btn.dataset.timestamp;
-        await fetch(`${sheetBestURL}/timestamp/${encodeURIComponent(timestamp)}`, {
-          method: 'DELETE'
-        });
+        const ok = confirm("Supprimer définitivement cette transaction ?");
+        if (!ok) return;
+
+        await fetch(`${sheetBestURL}/timestamp/${encodeURIComponent(timestamp)}`, { method: 'DELETE' });
         await chargerTransactions();
       });
     });
   }
 
-  form.addEventListener("submit", async function (e) {
+  /* -----------------------------
+     Ajout d'une transaction
+  ------------------------------*/
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const nouvelle = {
@@ -170,14 +218,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     form.reset();
-    remplirFiltres();
+    // Réinitialise le champ mois-année à la période courante
+    const now = new Date();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    moisAnneeInput.value = `${now.getFullYear()}-${mm}`;
+
     await chargerTransactions();
   });
 
+  // Changement de période
   moisSelect.addEventListener("change", afficherTransactions);
   anneeSelect.addEventListener("change", afficherTransactions);
 
-  remplirSelects();
+  // 🚀 Démarrage
+  remplirSelects();   // ⬅️ charge catégories & comptes depuis localStorage
   remplirFiltres();
   chargerTransactions();
 });
