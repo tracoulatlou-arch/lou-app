@@ -210,3 +210,9 @@ a:hover {
   background: var(--border);
   margin: 15px 0;
 }
+/* --- Titres à l'intérieur des cases --- */
+section h1,
+section h2,
+section h3 {
+  color: #050F2A; /* même couleur que le fond */
+}
