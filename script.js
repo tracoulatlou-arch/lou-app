@@ -7,9 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🎨 15 couleurs (bleus/violets) pour le camembert
   const PIE_COLORS = [
-    "#050F2A", "#0A1A45", "#0F255F", "#14307A", "#183A95",
-    "#1D45AF", "#224FCA", "#275AE4", "#2E64FF", "#4A6EFF",
-    "#6A78FF", "#8A82FF", "#A28CFF", "#B8A9FF", "#7BBBFF"
+    "#59236eff", "#0A1A45", "#1c9be4ff", "#0044ffff", "#3f2e9bff",
+    "#aa4bcfff", "#22caaeff", "#550034ff", "#5d6970ff", "#6a88ffff",
+    "#93ddffff", "#19574cff", "#b10d5fff", "#B8A9FF", "#7BBBFF"
   ];
 
   // 🔌 Sélecteurs DOM
