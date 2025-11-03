@@ -217,3 +217,21 @@ a:hover {
   background: var(--border);
   margin: 15px 0;
 }
+/* === Overrides ciblés : titres demandés en violet === */
+
+/* 📊 Suivi financier (titre principal) */
+header h1,
+#app-title,
+.app-title {
+  color: #B8A9FF !important;
+}
+
+/* 💼 Solde total cumulé : XXX € */
+#solde-total,
+#total-cumule,
+.solde-total,
+.total-cumule,
+.kpi-solde,
+[data-role="solde-total"] {
+  color: #B8A9FF !important;
+}
