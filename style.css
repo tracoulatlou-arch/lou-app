@@ -35,14 +35,37 @@ h3{font-size:clamp(18px,2.5vw,22px);}
 header h1,#total-cumule{color:var(--title);}
 section h1,section h2,section h3{color:#050F2A;}
 
-/* --- Bouton paramètres --- */
+/* --- Bouton menu hamburger (remplace ⚙️) --- */
 #btn-parametres{
   position:absolute;top:20px;left:20px;
   background:transparent;border:1px solid var(--decor);
-  color:var(--text);padding:8px 14px;border-radius:20px;
+  color:var(--text);padding:10px;border-radius:20px;
   text-decoration:none;transition:.2s;
+  display:flex;align-items:center;justify-content:center;
+  width:42px;height:42px;
 }
 #btn-parametres:hover{background:var(--decor);color:var(--bg);}
+
+/* --- Icône menu hamburger --- */
+.menu-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 22px;
+  height: 16px;
+}
+
+.menu-icon span {
+  display: block;
+  height: 3px;
+  background-color: var(--decor);
+  border-radius: 3px;
+  transition: background-color 0.3s;
+}
+
+#btn-parametres:hover .menu-icon span {
+  background-color: var(--bg);
+}
 
 /* --- Cases principales --- */
 .row{
@@ -118,14 +141,14 @@ a:hover{text-decoration:underline;}
 #comptes-list .group-title{
   margin: 14px 0 8px;
   padding: 6px 10px;
-  background: rgba(184,169,255,0.25); /* violet doux */
+  background: rgba(184,169,255,0.25);
   border: 1px solid rgba(184,169,255,0.6);
   color: #050F2A;
   border-radius: 8px;
   font-weight: 700;
 }
 
-/* (optionnel) petite classe si on veut cibler les cartes de compte */
+/* (optionnel) petites cartes compte */
 #comptes-list .account-card{
   background: rgba(255,255,255,0.92);
   border: 1px solid rgba(4,18,38,0.12);
