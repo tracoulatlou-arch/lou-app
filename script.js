@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let transactions = [];
   let camembertChart;
   let lineChart;
+  let legendMode = "percent"; // 'percent' ou 'value' pour la légende à droite
 
   // 🎨 Couleurs camembert
   const PIE_COLORS = [
@@ -13,15 +14,20 @@ document.addEventListener("DOMContentLoaded", () => {
     "#93DDFF", "#19574C", "#B10D5F", "#B8A9FF", "#7BBBFF"
   ];
 
-  // 🧮 ———— À MODIFIER ICI (listes fixes) ————
+  // 🧮 ———— Catégories et Comptes FIXES ————
   const CATEGORIES_FIXES = [
     "Loyer","Courses","Essence","Assurance","Sorties","Salaire",
-    "Restaurants","Liquide","Eléctricité / Gaz","Apple","Forfait téléphone","Epargne","Transport","Shopping","Garentie","Virement bénéficiaire","CAF"
+    "Restaurants","Liquide","Électricité / Gaz","Apple",
+    "Forfait téléphone","Épargne","Transport","Shopping",
+    "Garantie","Virement bénéficiaire","CAF"
   ];
+
   const COMPTES_FIXES = [
-    "Compte Courant","Épargne PEL","Épargne Liv. A","Révolut","Trade Republic","Fortunéo"
+    "Compte Courant","Épargne PEL","Épargne Liv. A",
+    "Révolut","Trade Republic","Fortunéo"
   ];
-  // ————————————————————————————————————————————————
+
+  const SAVINGS_ORDER = ["Épargne PEL","Épargne Liv. A","Révolut","Trade Republic","Fortunéo"];
 
   // 🔌 Sélecteurs DOM
   const form = document.getElementById("form-ajout");
@@ -39,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const kpiSoldeCumule = document.getElementById("kpi-solde-cumule");
   const comptesCumulesUl = document.getElementById("comptes-cumules");
+  const savingsUl = document.getElementById("epargne-lignes");
 
   const kpiEntrees = document.getElementById("kpi-entrees");
   const kpiSorties = document.getElementById("kpi-sorties");
@@ -47,6 +54,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const camembert = document.getElementById("camembert");
   const chartAnnee = document.getElementById("chart-annee");
   const anneeActuelleSpan = document.getElementById("annee-actuelle");
+  const toggleMetricBtn = document.getElementById("toggle-metric");
+  const catLegendBox = document.getElementById("cat-legend");
 
   /* ----------------------------- Remplir selects ------------------------------*/
   function remplirSelects() {
@@ -147,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }]
       },
       options: {
-        maintainAspectRatio: false,    // 👈 important pour la hauteur CSS
+        maintainAspectRatio: false,
         responsive: true,
         plugins: { legend: { display: true, position: 'bottom' } },
         scales: {
@@ -168,50 +177,114 @@ document.addEventListener("DOMContentLoaded", () => {
         ...tx, index,
         mois: parseInt(mois, 10),
         annee: parseInt(annee, 10),
-        montant: parseFloat(tx.montant || 0)
+        montant: parseFloat(tx.montant || 0),
+        compte: tx.compte || "",
+        categorie: tx.categorie || "",
+        type: tx.type || "",
+        sousCategorie: tx.sousCategorie || "",
+        description: tx.description || ""
       };
     });
 
-    const filtres = txNorm.filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre);
+    const moisTx = txNorm.filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre);
 
-    // KPI mois
-    const totalEntrees = filtres.filter(t => t.type === "entrée").reduce((a,t)=>a+t.montant,0);
-    const totalSorties = filtres.filter(t => t.type === "sortie").reduce((a,t)=>a+t.montant,0);
+    /* --- KPI Compte Courant uniquement --- */
+    const ccTx = moisTx.filter(t => t.compte === "Compte Courant");
+    const totalEntrees = ccTx.filter(t => t.type === "entrée").reduce((a,t)=>a+t.montant,0);
+    const totalSorties = ccTx.filter(t => t.type === "sortie").reduce((a,t)=>a+t.montant,0);
     const soldeMois = totalEntrees - totalSorties;
-
     kpiEntrees.textContent = `${totalEntrees.toFixed(2)} €`;
     kpiSorties.textContent = `${totalSorties.toFixed(2)} €`;
     kpiSoldeMois.textContent = `${soldeMois.toFixed(2)} €`;
 
-    // Camembert dépenses par catégorie (mois)
+    /* --- Épargne : lignes "Entrées / Sorties" pour chaque compte --- */
+    const parts = [];
+    SAVINGS_ORDER.forEach(acc => {
+      const t = moisTx.filter(x => x.compte === acc);
+      const e = t.filter(x => x.type === "entrée").reduce((a,x)=>a+x.montant,0);
+      const s = t.filter(x => x.type === "sortie").reduce((a,x)=>a+x.montant,0);
+      parts.push(`
+        <li>
+          <span class="s-left">${acc}</span>
+          <span class="s-right">
+            <span class="badge badge-in">+ ${e.toFixed(2)} €</span>
+            <span class="badge badge-out">- ${s.toFixed(2)} €</span>
+          </span>
+        </li>
+      `);
+    });
+    savingsUl.innerHTML = parts.join("");
+
+    /* --- Camembert dépenses par catégorie (mois) --- */
     const parCategorie = {};
-    filtres.filter(t => t.type === "sortie").forEach(tx => {
+    const sortiesTx = moisTx.filter(t => t.type === "sortie");
+    sortiesTx.forEach(tx => {
       parCategorie[tx.categorie] = (parCategorie[tx.categorie] || 0) + tx.montant;
     });
 
     if (camembertChart) camembertChart.destroy();
+    const labels = Object.keys(parCategorie);
+    const values = Object.values(parCategorie);
+    const totalSortiesMois = values.reduce((a,b)=>a+b,0);
+
     camembertChart = new Chart(camembert, {
       type: "pie",
       data: {
-        labels: Object.keys(parCategorie),
-        datasets: [{ data: Object.values(parCategorie), backgroundColor: PIE_COLORS }]
+        labels,
+        datasets: [{ data: values, backgroundColor: PIE_COLORS }]
       },
       options: {
-        maintainAspectRatio: false,    // 👈 important pour la hauteur CSS
+        maintainAspectRatio: false,
         responsive: true,
-        plugins: { legend: { position: 'bottom' } }
+        plugins: {
+          legend: { display: false }, // on gère notre légende à droite
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const v = ctx.parsed;
+                const p = totalSortiesMois ? (v/totalSortiesMois*100) : 0;
+                return `${ctx.label}: ${v.toFixed(2)} € (${p.toFixed(1)}%)`;
+              }
+            }
+          }
+        }
       }
     });
 
-    // Liste Transactions (mois)
-    renderTransactionsList(filtres);
+    // Légende personnalisée à droite (toggle € / %)
+    renderCatLegend(labels, values, totalSortiesMois);
+
+    /* --- Liste Transactions triée alphabétiquement --- */
+    renderTransactionsList(moisTx);
   }
 
-  function renderTransactionsList(filtres) {
+  function renderCatLegend(labels, values, total) {
+    const rows = labels.map((lab, i) => {
+      const v = values[i] || 0;
+      const pct = total ? (v/total*100) : 0;
+      const right = (legendMode === "percent")
+        ? `${pct.toFixed(1)} %`
+        : `${v.toFixed(2)} €`;
+      return `
+        <div class="cat-row">
+          <span>${lab}</span>
+          <strong>${right}</strong>
+        </div>
+      `;
+    }).join("");
+    catLegendBox.innerHTML = rows;
+    toggleMetricBtn.textContent = (legendMode === "percent") ? "€" : "%";
+    toggleMetricBtn.setAttribute("title", (legendMode === "percent") ? "Afficher les montants en €" : "Afficher les pourcentages");
+  }
+
+  function renderTransactionsList(moisTx) {
     listeTransactions.innerHTML = "";
 
-    const entrees = filtres.filter(tx => tx.type === "entrée");
-    const sorties = filtres.filter(tx => tx.type === "sortie");
+    // Sépare et trie alphabétiquement (catégorie + sous-cat + description)
+    const key = (tx) => (tx.categorie + " " + tx.sousCategorie + " " + tx.description).trim().toLowerCase();
+
+    const entrees = moisTx.filter(tx => tx.type === "entrée").sort((a,b)=> key(a).localeCompare(key(b)));
+    const sorties = moisTx.filter(tx => tx.type === "sortie").sort((a,b)=> key(a).localeCompare(key(b)));
 
     const container = document.createElement("div");
     container.className = "transactions-grid";
@@ -226,8 +299,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function makeItem(tx) {
       const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
+      const label = (tx.description ? ` – ${tx.description}` : '');
       const li = document.createElement("li");
-      li.innerHTML = `${Number(tx.montant).toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})
+      li.innerHTML = `${Number(tx.montant).toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})${label}
         <button class="btn-supprimer" data-timestamp="${tx.timestamp}" style="float:right;">🗑️</button>`;
       return li;
     }
@@ -277,9 +351,32 @@ document.addEventListener("DOMContentLoaded", () => {
     await chargerTransactions();
   });
 
-  // Changement de période
+  // Changement de période => met à jour Bloc 2 et aussi la courbe (année) si l'année change
   moisSelect.addEventListener("change", () => afficherMoisSection());
   anneeSelect.addEventListener("change", () => { afficherGlobal(); afficherMoisSection(); });
+
+  // Toggle € / %
+  toggleMetricBtn.addEventListener("click", () => {
+    legendMode = (legendMode === "percent") ? "value" : "percent";
+    // recalculer avec les dernières données affichées
+    const moisFiltre = parseInt(moisSelect.value, 10);
+    const anneeFiltre = parseInt(anneeSelect.value, 10);
+    const txNorm = transactions.map(tx => ({
+      ...tx,
+      montant: parseFloat(tx.montant || 0),
+      annee: parseInt(String(tx.date || "").split("-")[0], 10),
+      mois: parseInt(String(tx.date || "").split("-")[1], 10),
+      type: tx.type,
+      categorie: tx.categorie || ""
+    }));
+    const moisTx = txNorm.filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre && tx.type === "sortie");
+    const parCat = {};
+    moisTx.forEach(t => { parCat[t.categorie] = (parCat[t.categorie] || 0) + t.montant; });
+    const labels = Object.keys(parCat);
+    const values = Object.values(parCat);
+    const total = values.reduce((a,b)=>a+b,0);
+    renderCatLegend(labels, values, total);
+  });
 
   // 🚀 Démarrage
   remplirSelects();

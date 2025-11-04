@@ -67,7 +67,7 @@ section{
   background:var(--case);color:#041226;border-radius:var(--radius);
   padding:25px;box-shadow:var(--shadow);min-width:320px;margin-top:30px;
 }
-.panel{background:rgba(255,255,255,.9);border-radius:10px;padding:var(--panel-padding);}
+.panel{background:rgba(255,255,255,.9);border-radius:10px;padding:var(--panel-padding);position:relative;}
 .two-col{
   display:grid;gap:var(--panel-gap);
   grid-template-columns:1fr;  /* mobile */
@@ -99,6 +99,18 @@ section{
   border:1px solid rgba(4,18,38,0.12);display:flex;justify-content:space-between;gap:10px;
 }
 
+/* --- Liste épargne (mois) --- */
+.savings-list{list-style:none;margin-top:8px;padding-left:0;}
+.savings-list li{
+  background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;padding:8px 10px;margin-bottom:8px;
+  display:flex;justify-content:space-between;gap:10px;
+}
+.savings-list .s-left{font-weight:700;}
+.savings-list .s-right{display:flex;gap:12px;}
+.savings-list .badge{padding:2px 8px;border-radius:12px;font-weight:700;}
+.badge-in{background:#d5ffe0;color:#053b1a;border:1px solid #96d1a7;}
+.badge-out{background:#ffdcdc;color:#5a0c0c;border:1px solid #f2a1a1;}
+
 /* --- Graphiques --- */
 .chart-wrap{
   height:var(--chart-height);
@@ -107,6 +119,36 @@ section{
 }
 #chart-annee,#camembert{
   width:100%!important;max-width:var(--canvas-max);display:block;
+}
+
+/* --- Panneau catégories (camembert à gauche, légende à droite) --- */
+.panel-cats .cats-title{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+}
+.chip-btn{
+  border:1px solid rgba(4,18,38,0.15);
+  background:#fff;border-radius:14px;padding:4px 10px;cursor:pointer;
+  font-weight:700;color:#05172e;
+}
+.chip-btn:hover{background:#f4f7ff;}
+
+.cats-grid{
+  display:grid;gap:12px;
+  grid-template-columns:1fr; /* mobile */
+}
+@media (min-width:900px){
+  .cats-grid{ grid-template-columns:1fr 1fr; } /* camembert / légende */
+}
+
+.cat-legend{
+  display:grid;grid-template-columns:1fr;gap:8px;align-content:start;
+}
+@media (min-width:600px){
+  .cat-legend{ grid-template-columns:1fr 1fr; } /* 2 colonnes */
+}
+.cat-row{
+  background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;
+  padding:8px 10px;display:flex;justify-content:space-between;gap:10px;
 }
 
 /* --- Formulaire --- */
