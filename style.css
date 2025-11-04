@@ -153,22 +153,30 @@ a:hover{text-decoration:underline;}
   background: rgba(255,255,255,0.92);
   border: 1px solid rgba(4,18,38,0.12);
 }
-/* --- En-tête simplifié --- */
+/* --- En-tête centré au milieu de la page --- */
 .header-titre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  margin: 0 auto;
+  margin-top: 60px;
   margin-bottom: 2rem;
+  width: 100%;
+  position: relative;
 }
 
 .header-titre h1 {
-  font-size: clamp(28px, 4vw, 42px);
-  letter-spacing: 1px;
+  font-size: clamp(30px, 5vw, 46px);
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--title);
   margin-bottom: 0.5rem;
 }
 
 #total-cumule {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: var(--text);
   text-align: center;
