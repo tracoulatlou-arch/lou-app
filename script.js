@@ -5,13 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let transactions = [];
   let camembertChart;
   let lineChart;
-  let legendMode = "percent"; // 'percent' ou 'value' pour la légende à droite
+  let legendMode = "percent"; // 'percent' | 'value'
 
   // 🎨 Couleurs camembert
   const PIE_COLORS = [
-    "#59236E", "#0A1A45", "#1C9BE4", "#0044FF", "#3F2E9B",
-    "#AA4BCF", "#22CAAE", "#550034", "#5D6970", "#6A88FF",
-    "#93DDFF", "#19574C", "#B10D5F", "#B8A9FF", "#7BBBFF"
+    "#6ce5e8", "#41b8d5", "#2d8bba", "#506e9a", "#635a92",
+    "#7e468a", "#942270", "#c12862", "#eb4e57", "#6A88FF",
+    "#ff7742", "#ffae3a", "#efda5b", "#a6d664", "#189f74", "#228b7d", "#377376", "#21667d", "#176192", "#000000"
   ];
 
   // 🧮 ———— Catégories et Comptes FIXES ————
@@ -19,14 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
     "Loyer","Courses","Essence","Assurance","Sorties","Salaire",
     "Restaurants","Liquide","Électricité / Gaz","Apple",
     "Forfait téléphone","Épargne","Transport","Shopping",
-    "Garantie","Virement bénéficiaire","CAF"
+    "Garantie","Virement bénéficiaire","CAF","Santé","Autre"
   ];
-
   const COMPTES_FIXES = [
     "Compte Courant","Épargne PEL","Épargne Liv. A",
     "Révolut","Trade Republic","Fortunéo"
   ];
-
   const SAVINGS_ORDER = ["Épargne PEL","Épargne Liv. A","Révolut","Trade Republic","Fortunéo"];
 
   // 🔌 Sélecteurs DOM
@@ -115,7 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
       totauxParCompte[tx.compte] += sens * tx.montant;
     });
 
-    // Ordre : comptes déclarés puis éventuels autres
     const comptesConnus = [...COMPTES_FIXES];
     const autres = Object.keys(totauxParCompte).filter(c => c && !comptesConnus.includes(c));
     const ordre = [...comptesConnus, ...autres];
@@ -159,9 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
         maintainAspectRatio: false,
         responsive: true,
         plugins: { legend: { display: true, position: 'bottom' } },
-        scales: {
-          y: { ticks: { callback: v => `${Number(v).toFixed(0)} €` } }
-        }
+        scales: { y: { ticks: { callback: v => `${Number(v).toFixed(0)} €` } } }
       }
     });
   }
@@ -182,7 +177,8 @@ document.addEventListener("DOMContentLoaded", () => {
         categorie: tx.categorie || "",
         type: tx.type || "",
         sousCategorie: tx.sousCategorie || "",
-        description: tx.description || ""
+        description: tx.description || "",
+        timestamp: tx.timestamp || ""
       };
     });
 
@@ -197,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     kpiSorties.textContent = `${totalSorties.toFixed(2)} €`;
     kpiSoldeMois.textContent = `${soldeMois.toFixed(2)} €`;
 
-    /* --- Épargne : lignes "Entrées / Sorties" pour chaque compte --- */
+    /* --- Épargne : lignes Entrées / Sorties --- */
     const parts = [];
     SAVINGS_ORDER.forEach(acc => {
       const t = moisTx.filter(x => x.compte === acc);
@@ -215,18 +211,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     savingsUl.innerHTML = parts.join("");
 
-    /* --- Camembert dépenses par catégorie (mois) --- */
+    /* --- Camembert dépenses par catégorie (tri alphabétique) --- */
     const parCategorie = {};
     const sortiesTx = moisTx.filter(t => t.type === "sortie");
     sortiesTx.forEach(tx => {
       parCategorie[tx.categorie] = (parCategorie[tx.categorie] || 0) + tx.montant;
     });
 
-    if (camembertChart) camembertChart.destroy();
-    const labels = Object.keys(parCategorie);
-    const values = Object.values(parCategorie);
+    // Trie alphabétique
+    const entries = Object.entries(parCategorie).sort((a,b)=> a[0].localeCompare(b[0], 'fr', {sensitivity:'base'}));
+    const labels = entries.map(e=>e[0]);
+    const values = entries.map(e=>e[1]);
     const totalSortiesMois = values.reduce((a,b)=>a+b,0);
 
+    if (camembertChart) camembertChart.destroy();
     camembertChart = new Chart(camembert, {
       type: "pie",
       data: {
@@ -237,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
         maintainAspectRatio: false,
         responsive: true,
         plugins: {
-          legend: { display: false }, // on gère notre légende à droite
+          legend: { display: false }, // légende personnalisée à droite
           tooltip: {
             callbacks: {
               label: (ctx) => {
@@ -251,10 +249,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Légende personnalisée à droite (toggle € / %)
+    // Légende personnalisée (triée) + toggle € / %
     renderCatLegend(labels, values, totalSortiesMois);
 
-    /* --- Liste Transactions triée alphabétiquement --- */
+    /* --- Transactions triées et affichées en colonnes --- */
     renderTransactionsList(moisTx);
   }
 
@@ -262,13 +260,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const rows = labels.map((lab, i) => {
       const v = values[i] || 0;
       const pct = total ? (v/total*100) : 0;
-      const right = (legendMode === "percent")
-        ? `${pct.toFixed(1)} %`
-        : `${v.toFixed(2)} €`;
+      const right = (legendMode === "percent") ? `${pct.toFixed(1)} %` : `${v.toFixed(2)} €`;
       return `
         <div class="cat-row">
-          <span>${lab}</span>
-          <strong>${right}</strong>
+          <span class="cat-label">${lab}</span>
+          <span class="cat-value">${right}</span>
         </div>
       `;
     }).join("");
@@ -278,43 +274,51 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderTransactionsList(moisTx) {
-    listeTransactions.innerHTML = "";
-
     // Sépare et trie alphabétiquement (catégorie + sous-cat + description)
     const key = (tx) => (tx.categorie + " " + tx.sousCategorie + " " + tx.description).trim().toLowerCase();
 
     const entrees = moisTx.filter(tx => tx.type === "entrée").sort((a,b)=> key(a).localeCompare(key(b)));
     const sorties = moisTx.filter(tx => tx.type === "sortie").sort((a,b)=> key(a).localeCompare(key(b)));
 
-    const container = document.createElement("div");
-    container.className = "transactions-grid";
+    listeTransactions.innerHTML = "";
 
-    const colSorties = document.createElement("div");
-    colSorties.className = "col-sorties";
-    colSorties.innerHTML = "<h3>Sorties</h3>";
-
-    const colEntrees = document.createElement("div");
-    colEntrees.className = "col-entrees";
-    colEntrees.innerHTML = "<h3>Entrées</h3>";
-
-    function makeItem(tx) {
+    // Générateur de ligne transaction
+    function makeTxRow(tx){
       const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
-      const label = (tx.description ? ` – ${tx.description}` : '');
+      const label = tx.description ? ` – ${tx.description}` : '';
       const li = document.createElement("li");
-      li.innerHTML = `${Number(tx.montant).toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})${label}
-        <button class="btn-supprimer" data-timestamp="${tx.timestamp}" style="float:right;">🗑️</button>`;
+      li.className = "tx-row";
+      li.innerHTML = `
+        <div class="tx-amount">${Number(tx.montant).toFixed(2)} €</div>
+        <div class="tx-desc">${tx.categorie}${sous}${label}</div>
+        <div class="tx-account">${tx.compte}</div>
+        <div class="tx-actions">
+          <button class="btn-delete-square" data-timestamp="${tx.timestamp}" aria-label="Supprimer">×</button>
+        </div>
+      `;
       return li;
     }
 
-    sorties.forEach(tx => colSorties.appendChild(makeItem(tx)));
-    entrees.forEach(tx => colEntrees.appendChild(makeItem(tx)));
+    // Titre colonnes sorties
+    if (sorties.length){
+      const head = document.createElement("h3");
+      head.textContent = "Sorties";
+      head.style.margin = "12px 0 8px";
+      listeTransactions.appendChild(head);
+      sorties.forEach(tx => listeTransactions.appendChild(makeTxRow(tx)));
+    }
 
-    container.appendChild(colSorties);
-    container.appendChild(colEntrees);
-    listeTransactions.appendChild(container);
+    // Titre colonnes entrées
+    if (entrees.length){
+      const head2 = document.createElement("h3");
+      head2.textContent = "Entrées";
+      head2.style.margin = "16px 0 8px";
+      listeTransactions.appendChild(head2);
+      entrees.forEach(tx => listeTransactions.appendChild(makeTxRow(tx)));
+    }
 
     // Suppression
-    document.querySelectorAll(".btn-supprimer").forEach(btn => {
+    document.querySelectorAll(".btn-delete-square").forEach(btn => {
       btn.addEventListener("click", async () => {
         const timestamp = btn.dataset.timestamp;
         if (!confirm("Supprimer définitivement cette transaction ?")) return;
@@ -351,14 +355,14 @@ document.addEventListener("DOMContentLoaded", () => {
     await chargerTransactions();
   });
 
-  // Changement de période => met à jour Bloc 2 et aussi la courbe (année) si l'année change
+  // Changement de période
   moisSelect.addEventListener("change", () => afficherMoisSection());
   anneeSelect.addEventListener("change", () => { afficherGlobal(); afficherMoisSection(); });
 
   // Toggle € / %
   toggleMetricBtn.addEventListener("click", () => {
     legendMode = (legendMode === "percent") ? "value" : "percent";
-    // recalculer avec les dernières données affichées
+    // Re-render legend with current month data
     const moisFiltre = parseInt(moisSelect.value, 10);
     const anneeFiltre = parseInt(anneeSelect.value, 10);
     const txNorm = transactions.map(tx => ({
@@ -369,11 +373,12 @@ document.addEventListener("DOMContentLoaded", () => {
       type: tx.type,
       categorie: tx.categorie || ""
     }));
-    const moisTx = txNorm.filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre && tx.type === "sortie");
+    const moisSorties = txNorm.filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre && tx.type === "sortie");
     const parCat = {};
-    moisTx.forEach(t => { parCat[t.categorie] = (parCat[t.categorie] || 0) + t.montant; });
-    const labels = Object.keys(parCat);
-    const values = Object.values(parCat);
+    moisSorties.forEach(t => { parCat[t.categorie] = (parCat[t.categorie] || 0) + t.montant; });
+    const entries = Object.entries(parCat).sort((a,b)=> a[0].localeCompare(b[0], 'fr', {sensitivity:'base'}));
+    const labels = entries.map(e=>e[0]);
+    const values = entries.map(e=>e[1]);
     const total = values.reduce((a,b)=>a+b,0);
     renderCatLegend(labels, values, total);
   });

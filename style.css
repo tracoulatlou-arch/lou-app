@@ -16,6 +16,10 @@
   --panel-padding:16px;
   --canvas-max:900px;
   --chart-height:340px;
+
+  --tx-amount-w:110px;
+  --tx-account-w:160px;
+  --tx-action-w:40px;
 }
 
 /* --- Base --- */
@@ -37,8 +41,13 @@ h1,h2,h3{
 }
 h2{font-size:clamp(22px,3vw,28px);}
 h3{font-size:clamp(18px,2.5vw,22px);}
+.section-sub{
+  font-size:clamp(16px,2.2vw,20px);
+  color:#05172e;
+  margin-top:6px;
+}
 
-/* --- En-tête centré (sans solde) --- */
+/* --- En-tête centré --- */
 .header-titre{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;margin:0 auto;margin-top:60px;margin-bottom:2rem;width:100%;
@@ -88,7 +97,6 @@ section{
 .kpi-label{font-size:.9rem;color:#334;padding-bottom:2px;}
 .kpi-value{font-size:1.15rem;font-weight:800;color:#05172e;}
 .hint{margin-top:8px;font-size:.86rem;color:#144;opacity:.9}
-
 @media (max-width:1100px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} }
 @media (max-width:600px){ .kpi-grid{grid-template-columns:1fr;} }
 
@@ -107,7 +115,7 @@ section{
 }
 .savings-list .s-left{font-weight:700;}
 .savings-list .s-right{display:flex;gap:12px;}
-.savings-list .badge{padding:2px 8px;border-radius:12px;font-weight:700;}
+.savings-list .badge{padding:2px 8px;border-radius:12px;font-weight:700;white-space:nowrap;}
 .badge-in{background:#d5ffe0;color:#053b1a;border:1px solid #96d1a7;}
 .badge-out{background:#ffdcdc;color:#5a0c0c;border:1px solid #f2a1a1;}
 
@@ -141,15 +149,18 @@ section{
 }
 
 .cat-legend{
-  display:grid;grid-template-columns:1fr;gap:8px;align-content:start;
+  display:grid;gap:8px;align-content:start;
+  grid-template-columns:1fr;
 }
 @media (min-width:600px){
-  .cat-legend{ grid-template-columns:1fr 1fr; } /* 2 colonnes */
+  .cat-legend{ grid-template-columns:repeat(2, minmax(260px,1fr)); } /* colonnes plus larges */
 }
 .cat-row{
   background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;
-  padding:8px 10px;display:flex;justify-content:space-between;gap:10px;
+  padding:8px 10px;display:flex;justify-content:space-between;gap:10px;align-items:center;
 }
+.cat-row .cat-label{flex:1 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;color:#05172e;}
+.cat-row .cat-value{white-space:nowrap;font-weight:800;color:#05172e;}
 
 /* --- Formulaire --- */
 form{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
@@ -161,20 +172,32 @@ form button{
 }
 form button:hover{background:var(--text);color:var(--bg);}
 
-/* --- Transactions à deux colonnes --- */
-.transactions-grid{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+/* --- Transactions : disposition en colonnes --- */
+.tx-list{list-style:none;padding-left:0;margin:0;}
+.tx-row{
+  background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;
+  padding:8px 10px;margin-bottom:8px;display:grid;align-items:center;gap:8px;
+  grid-template-columns: var(--tx-amount-w) 1fr var(--tx-account-w) var(--tx-action-w);
+}
+.tx-amount{font-weight:800;color:#05172e;text-align:right;white-space:nowrap;}
+.tx-desc{color:#05172e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tx-account{color:#334;white-space:nowrap;text-align:left;}
+.tx-actions{display:flex;justify-content:flex-end;align-items:center;}
+.btn-delete-square{
+  width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;
+  background:var(--decor);color:#050F2A;font-weight:900;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.btn-delete-square:hover{filter:brightness(1.05);}
+
+/* --- Anciennes listes (désactivées visuellement mais gardées pour réemploi) --- */
+.transactions-grid{display:flex;gap:20px;flex-wrap:wrap;}
 .col-sorties,.col-entrees{flex:1;border-radius:10px;padding:10px;min-width:280px;}
 .col-sorties{background:#ffdcdc;}
 .col-entrees{background:#d5ffe0;}
 .col-sorties h3,.col-entrees h3{text-align:center;color:#050F2A;margin-bottom:10px;}
-.col-sorties li,.col-entrees li{
-  list-style:none;background:transparent;color:#050F2A;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05);
-}
+.col-sorties li,.col-entrees li{list-style:none;background:transparent;color:#050F2A;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05);}
 .col-sorties li:last-child,.col-entrees li:last-child{border-bottom:none;}
-.btn-supprimer{
-  background:var(--decor);border:none;border-radius:6px;color:#050F2A;padding:4px 8px;margin-left:6px;cursor:pointer;transition:.2s;
-}
-.btn-supprimer:hover{background:#ff4b4b;color:white;}
 
 /* --- Liens --- */
 a{color:var(--decor);} a:hover{text-decoration:underline;}

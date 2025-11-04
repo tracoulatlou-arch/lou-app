@@ -21,22 +21,22 @@
     <h1>SUIVI FINANCIER</h1>
   </header>
 
-  <!-- 🟪 Bloc 1 : Vue globale (cumulé + graphique annuel) -->
+  <!-- 🟪 Bloc 1 : Vue globale -->
   <section id="global" class="two-col">
     <div class="panel">
       <h2>Vue globale</h2>
 
       <div class="kpi">
-        <div class="kpi-label">Solde total cumulé (toutes périodes)</div>
+        <div class="kpi-label">Solde total cumulé</div>
         <div class="kpi-value" id="kpi-solde-cumule">0 €</div>
       </div>
 
-      <h3 style="margin-top:14px;">Total par compte (cumulé)</h3>
+      <h3 class="section-sub">Total par compte</h3>
       <ul id="comptes-cumules" class="accounts-list"></ul>
     </div>
 
     <div class="panel">
-      <h2>Évolution annuelle (solde cumulé)</h2>
+      <h2>Évolution annuelle</h2>
       <div class="chart-wrap">
         <canvas id="chart-annee"></canvas>
       </div>
@@ -44,7 +44,7 @@
     </div>
   </section>
 
-  <!-- 🟦 Bloc 2 : Mois sélectionné (KPI Compte Courant + épargne + camembert + légende) -->
+  <!-- 🟦 Bloc 2 : Mois sélectionné -->
   <section id="mois-section" class="two-col">
     <div class="panel">
       <h2>Mois sélectionné</h2>
@@ -58,22 +58,23 @@
         </label>
       </div>
 
+      <h3 class="section-sub">Compte Courant</h3>
       <div class="kpi-grid">
         <div class="kpi">
-          <div class="kpi-label">Entrées (Compte Courant)</div>
+          <div class="kpi-label">Entrées</div>
           <div class="kpi-value" id="kpi-entrees">0 €</div>
         </div>
         <div class="kpi">
-          <div class="kpi-label">Sorties (Compte Courant)</div>
+          <div class="kpi-label">Sorties</div>
           <div class="kpi-value" id="kpi-sorties">0 €</div>
         </div>
         <div class="kpi">
-          <div class="kpi-label">Solde du mois (Compte Courant)</div>
+          <div class="kpi-label">Solde du mois</div>
           <div class="kpi-value" id="kpi-solde-mois">0 €</div>
         </div>
       </div>
 
-      <h3 style="margin-top:14px;">Épargne (mois en cours)</h3>
+      <h3 class="section-sub" style="margin-top:14px;">Épargne</h3>
       <ul id="epargne-lignes" class="savings-list"></ul>
     </div>
 
@@ -114,7 +115,7 @@
   <!-- 📜 Liste des transactions -->
   <section id="transactions">
     <h2>Transactions du mois sélectionné</h2>
-    <ul id="liste-transactions"></ul>
+    <ul id="liste-transactions" class="tx-list"></ul>
   </section>
 
   <script src="script.js"></script>
