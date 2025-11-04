@@ -10,6 +10,12 @@
   --border:rgba(255,255,255,.15);
   --radius:12px;
   --shadow:0 4px 20px rgba(0,0,0,.3);
+
+  /* Réglages rapides */
+  --panel-gap:18px;
+  --panel-padding:16px;
+  --canvas-max:900px;
+  --chart-height:340px;
 }
 
 /* --- Base --- */
@@ -32,7 +38,7 @@ h1,h2,h3{
 h2{font-size:clamp(22px,3vw,28px);}
 h3{font-size:clamp(18px,2.5vw,22px);}
 
-/* --- En-tête centré --- */
+/* --- En-tête centré (sans solde) --- */
 .header-titre{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;margin:0 auto;margin-top:60px;margin-bottom:2rem;width:100%;
@@ -41,9 +47,8 @@ h3{font-size:clamp(18px,2.5vw,22px);}
   font-size:clamp(30px,5vw,46px);
   letter-spacing:1.2px;text-transform:uppercase;color:var(--title);margin-bottom:.5rem;
 }
-#total-cumule{font-size:1.2rem;font-weight:600;color:var(--text);text-align:center;}
 
-/* --- Bouton menu hamburger (remplace ⚙️) --- */
+/* --- Bouton menu hamburger --- */
 #btn-parametres{
   position:absolute;top:20px;left:20px;
   background:transparent;border:1px solid var(--decor);
@@ -62,10 +67,13 @@ section{
   background:var(--case);color:#041226;border-radius:var(--radius);
   padding:25px;box-shadow:var(--shadow);min-width:320px;margin-top:30px;
 }
-.panel{background:rgba(255,255,255,.9);border-radius:10px;padding:16px;}
-.two-col{display:grid;grid-template-columns:1fr;gap:18px;}
+.panel{background:rgba(255,255,255,.9);border-radius:10px;padding:var(--panel-padding);}
+.two-col{
+  display:grid;gap:var(--panel-gap);
+  grid-template-columns:1fr;  /* mobile */
+}
 @media (min-width:900px){
-  .two-col{grid-template-columns:1fr 1fr;}
+  .two-col{grid-template-columns:1.1fr 0.9fr;} /* 60/40 */
 }
 
 /* --- Filtres Mois/Année --- */
@@ -81,17 +89,24 @@ section{
 .kpi-value{font-size:1.15rem;font-weight:800;color:#05172e;}
 .hint{margin-top:8px;font-size:.86rem;color:#144;opacity:.9}
 
+@media (max-width:1100px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:600px){ .kpi-grid{grid-template-columns:1fr;} }
+
 /* --- Liste comptes cumulés --- */
 .accounts-list{list-style:none;margin-top:10px;padding-left:0;}
 .accounts-list li{
-  background:rgba(255,255,255,.92);color:#050F2A;border-radius:8px;padding:10px;margin-bottom:8px;
+  background:rgba(255,255,255,.92);color:#050F2A;border-radius:8px;padding:8px 10px;margin-bottom:8px;
   border:1px solid rgba(4,18,38,0.12);display:flex;justify-content:space-between;gap:10px;
 }
 
 /* --- Graphiques --- */
-#graphique canvas,#chart-annee,#camembert{
-  width:100%!important;height:auto!important;max-width:520px;margin:0 auto;border-radius:10px;
-  background:rgba(255,255,255,.05);border:1px solid var(--border);
+.chart-wrap{
+  height:var(--chart-height);
+  border-radius:10px;background:rgba(255,255,255,.05);
+  border:1px solid var(--border);padding:6px;
+}
+#chart-annee,#camembert{
+  width:100%!important;max-width:var(--canvas-max);display:block;
 }
 
 /* --- Formulaire --- */

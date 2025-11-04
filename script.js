@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let camembertChart;
   let lineChart;
 
-  // 🎨 Couleurs
+  // 🎨 Couleurs camembert
   const PIE_COLORS = [
     "#59236E", "#0A1A45", "#1C9BE4", "#0044FF", "#3F2E9B",
     "#AA4BCF", "#22CAAE", "#550034", "#5D6970", "#6A88FF",
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ————————————————————————————————————————————————
 
   // 🔌 Sélecteurs DOM
-  const form = document.getElementById("form-ajout");            // 👈 gardée une seule fois
+  const form = document.getElementById("form-ajout");
   const typeInput = document.getElementById("type");
   const montantInput = document.getElementById("montant");
   const categorieInput = document.getElementById("categorie");
@@ -37,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const moisSelect = document.getElementById("mois-select");
   const anneeSelect = document.getElementById("annee-select");
 
-  const totalCumuleHeader = document.getElementById("total-cumule");
   const kpiSoldeCumule = document.getElementById("kpi-solde-cumule");
   const comptesCumulesUl = document.getElementById("comptes-cumules");
 
@@ -91,25 +90,25 @@ document.addEventListener("DOMContentLoaded", () => {
       montant: parseFloat(tx.montant || 0),
       an: parseInt(String(tx.date || "").split("-")[0], 10),
       mois: parseInt(String(tx.date || "").split("-")[1], 10),
-      type: tx.type
+      type: tx.type,
+      compte: tx.compte || ""
     }));
 
     // Solde cumulé (toutes périodes)
     const totalCumule = txNorm.reduce((acc, tx) => acc + (tx.type === "sortie" ? -tx.montant : tx.montant), 0);
-    totalCumuleHeader.textContent = `Solde total cumulé : ${totalCumule.toFixed(2)} €`;
     kpiSoldeCumule.textContent = `${totalCumule.toFixed(2)} €`;
 
     // Totaux par compte (cumulés)
     const totauxParCompte = {};
     txNorm.forEach(tx => {
-      if (!tx.compte) return;
       const sens = tx.type === "sortie" ? -1 : 1;
-      totauxParCompte[tx.compte] = (totauxParCompte[tx.compte] || 0) + sens * tx.montant;
+      if (!totauxParCompte[tx.compte]) totauxParCompte[tx.compte] = 0;
+      totauxParCompte[tx.compte] += sens * tx.montant;
     });
 
-    // Affiche la liste en suivant l'ordre COMPTES_FIXES puis les autres éventuels
+    // Ordre : comptes déclarés puis éventuels autres
     const comptesConnus = [...COMPTES_FIXES];
-    const autres = Object.keys(totauxParCompte).filter(c => !comptesConnus.includes(c));
+    const autres = Object.keys(totauxParCompte).filter(c => c && !comptesConnus.includes(c));
     const ordre = [...comptesConnus, ...autres];
 
     comptesCumulesUl.innerHTML = ordre.map(c => `
@@ -119,18 +118,16 @@ document.addEventListener("DOMContentLoaded", () => {
       </li>
     `).join('');
 
-    // Graphique annuel (solde cumulé mois par mois)
+    // Graphique annuel (solde net cumulatif mois par mois)
     const annee = parseInt(anneeSelect.value, 10) || new Date().getFullYear();
     anneeActuelleSpan.textContent = annee;
 
-    // Somme nette par mois (année choisie)
     const netParMois = Array(12).fill(0);
     txNorm.filter(tx => tx.an === annee && tx.mois >= 1 && tx.mois <= 12).forEach(tx => {
       const idx = tx.mois - 1;
       netParMois[idx] += (tx.type === "sortie" ? -tx.montant : tx.montant);
     });
 
-    // Cumulatif sur l'année
     const cumulParMois = netParMois.reduce((arr, val) => {
       const prev = arr.length ? arr[arr.length - 1] : 0;
       arr.push(prev + val);
@@ -150,6 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }]
       },
       options: {
+        maintainAspectRatio: false,    // 👈 important pour la hauteur CSS
         responsive: true,
         plugins: { legend: { display: true, position: 'bottom' } },
         scales: {
@@ -164,7 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const moisFiltre = parseInt(moisSelect.value, 10);     // 0-11
     const anneeFiltre = parseInt(anneeSelect.value, 10);
 
-    // Normalisation
     const txNorm = transactions.map((tx, index) => {
       const [annee, mois] = String(tx.date || "").split("-");
       return {
@@ -175,7 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     });
 
-    // Filtre mois/année
     const filtres = txNorm.filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre);
 
     // KPI mois
@@ -200,7 +196,11 @@ document.addEventListener("DOMContentLoaded", () => {
         labels: Object.keys(parCategorie),
         datasets: [{ data: Object.values(parCategorie), backgroundColor: PIE_COLORS }]
       },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      options: {
+        maintainAspectRatio: false,    // 👈 important pour la hauteur CSS
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
     });
 
     // Liste Transactions (mois)
@@ -277,7 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await chargerTransactions();
   });
 
-  // Changement de période => met à jour Bloc 2 et aussi la courbe (année) si l'année change
+  // Changement de période
   moisSelect.addEventListener("change", () => afficherMoisSection());
   anneeSelect.addEventListener("change", () => { afficherGlobal(); afficherMoisSection(); });
 

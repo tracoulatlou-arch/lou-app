@@ -16,18 +16,18 @@
     </div>
   </a>
 
-  <!-- En-tête centré -->
+  <!-- En-tête centré (sans solde) -->
   <header class="header-titre">
     <h1>SUIVI FINANCIER</h1>
-    <div id="total-cumule">Solde total cumulé : 0 €</div>
   </header>
 
   <!-- 🟪 Bloc 1 : Vue globale (cumulé + graphique annuel) -->
   <section id="global" class="two-col">
     <div class="panel">
       <h2>Vue globale</h2>
+
       <div class="kpi">
-        <div class="kpi-label">Solde cumulé (toutes périodes)</div>
+        <div class="kpi-label">Solde total cumulé (toutes périodes)</div>
         <div class="kpi-value" id="kpi-solde-cumule">0 €</div>
       </div>
 
@@ -37,7 +37,9 @@
 
     <div class="panel">
       <h2>Évolution annuelle (solde cumulé)</h2>
-      <canvas id="chart-annee" height="220"></canvas>
+      <div class="chart-wrap">
+        <canvas id="chart-annee"></canvas>
+      </div>
       <div class="hint">Année affichée : <span id="annee-actuelle"></span></div>
     </div>
   </section>
@@ -74,7 +76,9 @@
 
     <div class="panel">
       <h2>Dépenses par catégorie</h2>
-      <canvas id="camembert" height="220"></canvas>
+      <div class="chart-wrap">
+        <canvas id="camembert"></canvas>
+      </div>
     </div>
   </section>
 
