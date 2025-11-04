@@ -1,6 +1,4 @@
-/* ================================
-   STYLE GLOBAL - Bleu nuit / Violet clair
-==================================*/
+/* ================================ STYLE GLOBAL - Bleu nuit / Violet clair ==================================*/
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap');
 
 :root{
@@ -115,6 +113,7 @@ form button:hover{background:var(--text);color:var(--bg);}
 /* --- Liens --- */
 a{color:var(--decor);}
 a:hover{text-decoration:underline;}
+
 /* ===== Vue globale : sous-titre Épargne ===== */
 #comptes-list .group-title{
   margin: 14px 0 8px;

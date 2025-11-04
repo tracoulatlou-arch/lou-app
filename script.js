@@ -14,11 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🧾 Comptes affichés en CUMULÉ (toutes périodes)
   const ACCOUNTS_CUMULATIFS = [
-    "Révolut",
-    "Trade Republic",
-    "Epargne PEL",
-    "Epargne LIV. A",
-    "Fortunéo"
+    "Révolut", "Trade Republic", "Epargne PEL", "Epargne LIV. A", "Fortunéo"
   ];
 
   // 🔌 Sélecteurs DOM
@@ -38,9 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalCumuleDiv = document.getElementById("total-cumule");
   const camembert = document.getElementById("camembert");
 
-  /* -----------------------------
-     Utils : LocalStorage & Selects
-  ------------------------------*/
+  /* ----------------------------- Utils : LocalStorage & Selects ------------------------------*/
   const getStoredArray = (key, fallback) => {
     try {
       const raw = localStorage.getItem(key);
@@ -53,33 +47,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const getCategories = () =>
     getStoredArray("categories", ["Loyer", "Courses", "Essence", "Assurance", "Sorties", "Salaire", "Autres"]);
-
   const getComptes = () =>
     getStoredArray("comptes", ["Compte Courant", "Révolut", "Trade Republic", "Epargne PEL", "Epargne LIV. A", "Fortunéo"]);
 
   function remplirSelects() {
     const categories = getCategories();
     const comptes = getComptes();
-
     categorieInput.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
     compteInput.innerHTML = comptes.map(c => `<option value="${c}">${c}</option>`).join('');
   }
 
-  /* -----------------------------
-     Filtres (mois / année / date)
-  ------------------------------*/
+  /* ----------------------------- Filtres (mois / année / date) ------------------------------*/
   function getMoisNom(index) {
     return ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][index];
   }
 
   function remplirFiltres() {
     moisSelect.innerHTML = [...Array(12).keys()]
-      .map(i => `<option value="${i}">${getMoisNom(i)}</option>`).join('');
-
+      .map(i => `<option value="${i}">${getMoisNom(i)}</option>`)
+      .join('');
     const anneeActuelle = new Date().getFullYear();
     anneeSelect.innerHTML = [...Array(10).keys()]
-      .map(i => `<option value="${anneeActuelle - i}">${anneeActuelle - i}</option>`).join('');
-
+      .map(i => `<option value="${anneeActuelle - i}">${anneeActuelle - i}</option>`)
+      .join('');
     moisSelect.value = new Date().getMonth();
     anneeSelect.value = new Date().getFullYear();
 
@@ -89,9 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
     moisAnneeInput.value = `${annee}-${mois}`;
   }
 
-  /* -----------------------------
-     Chargement & affichage
-  ------------------------------*/
+  /* ----------------------------- Chargement & affichage ------------------------------*/
   async function chargerTransactions() {
     const res = await fetch(sheetBestURL);
     transactions = await res.json();
@@ -136,12 +124,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function makeItem(tx) {
       const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
       const li = document.createElement("li");
-      li.innerHTML = `
-        ${tx.montant.toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})
-        <button class="btn-supprimer" data-timestamp="${tx.timestamp}" style="float:right;">🗑️</button>
-      `;
+      li.innerHTML = `${tx.montant.toFixed(2)} € - ${tx.categorie}${sous} (${tx.compte})
+        <button class="btn-supprimer" data-timestamp="${tx.timestamp}" style="float:right;">🗑️</button>`;
       return li;
     }
+
     sorties.forEach(tx => colSorties.appendChild(makeItem(tx)));
     entrees.forEach(tx => colEntrees.appendChild(makeItem(tx)));
 
@@ -150,8 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
     listeTransactions.appendChild(container);
 
     /* ===== Vue globale ===== */
-
-    // a) Solde de la période (tous comptes)
     let soldePeriode = 0;
     const parCompteMois = {};
     const parCategorie = {};
@@ -159,7 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
     filtres.forEach(tx => {
       const sens = tx.type === "sortie" ? -1 : 1;
       soldePeriode += sens * tx.montant;
-
       if (!parCompteMois[tx.compte]) parCompteMois[tx.compte] = { entrees: 0, sorties: 0 };
       if (tx.type === "entrée") parCompteMois[tx.compte].entrees += tx.montant;
       else {
@@ -170,9 +154,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     soldeTotalDiv.textContent = `Solde total : ${soldePeriode.toFixed(2)} €`;
 
-    // b) Cumul (toutes périodes) pour les comptes d'épargne
     const cumulParCompte = {};
-    ACCOUNTS_CUMULATIFS.forEach(acc => { cumulParCompte[acc] = { entrees: 0, sorties: 0 }; });
+    ACCOUNTS_CUMULATIFS.forEach(acc => {
+      cumulParCompte[acc] = { entrees: 0, sorties: 0 };
+    });
 
     txNorm.forEach(tx => {
       if (ACCOUNTS_CUMULATIFS.includes(tx.compte)) {
@@ -181,12 +166,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // c) Rendu "Vue globale" : Compte Courant (mois) + sous-titre Épargne + comptes cumulés
     const parts = [];
-
-    // Compte Courant (mois)
     const cc = parCompteMois["Compte Courant"] || { entrees: 0, sorties: 0 };
     const ccSolde = cc.entrees - cc.sorties;
+
     parts.push(`
       <li class="account-card">
         <strong>Compte Courant</strong><br>
@@ -196,10 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
       </li>
     `);
 
-    // Sous-titre Épargne
     parts.push(`<li class="group-title">Épargne</li>`);
 
-    // Comptes cumulés
     ACCOUNTS_CUMULATIFS.forEach(acc => {
       const data = cumulParCompte[acc];
       const solde = data.entrees - data.sorties;
@@ -223,7 +204,10 @@ document.addEventListener("DOMContentLoaded", () => {
         labels: Object.keys(parCategorie),
         datasets: [{ data: Object.values(parCategorie), backgroundColor: PIE_COLORS }]
       },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
     });
 
     /* ===== Total cumulé (toutes transactions) ===== */
@@ -245,12 +229,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* -----------------------------
-     Ajout d'une transaction
-  ------------------------------*/
+  /* ----------------------------- Ajout d'une transaction ------------------------------*/
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const nouvelle = {
       type: typeInput.value,
       montant: montantInput.value,
@@ -272,7 +253,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const now = new Date();
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     moisAnneeInput.value = `${now.getFullYear()}-${mm}`;
-
     await chargerTransactions();
   });
 

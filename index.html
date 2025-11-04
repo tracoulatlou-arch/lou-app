@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> <html lang="fr"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0"/> <title>Suivi financier</title> <link rel="stylesheet" href="style.css" /> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> </head> <body> <!-- ⚙️ Lien vers la page paramètres --> <a id="btn-parametres" href="parametres.html">⚙️ Paramètres</a> <header> <h1 style="text-align: center;">📊 Suivi financier</h1> <div id="total-cumule" style="text-align: center; font-size: 1.2rem; margin-bottom: 1rem;"> 💼 Solde total cumulé : 0 € </div> </header> <!-- 🎯 Vue globale --> <div class="row"> <section id="global"> <h2>Vue globale</h2> <label>Mois : <select id="mois-select"></select> </label> <label>Année : <select id="annee-select"></select> </label> <div id="solde-total">Solde total : 0 €</div> <ul id="comptes-list"></ul> </section> <section id="graphique"> <h2>Dépenses par catégorie</h2> <canvas id="camembert" width="200" height="200"></canvas> </section> </div> <!-- ➕ Formulaire d’ajout --> <section id="formulaire-ajout"> <h2>Ajouter une transaction</h2> <form id="form-ajout"> <select id="type" required> <option value="">-- Type --</option> <option value="entrée">➕ Entrée</option> <option value="sortie">➖ Sortie</option> </select> <input type="number" step="0.01" id="montant" placeholder="Montant (€)" required /> <select id="categorie" required></select> <input type="text" id="sous-categorie" placeholder="Sous-catégorie (ex: Lidl)" /> <select id="compte" required></select> <input type="month" id="mois-annee" required /> <input type="text" id="description" placeholder="Description (facultatif)" /> <button type="submit">Ajouter</button> </form> </section> <!-- 📜 Liste des transactions --> <section id="transactions"> <h2>Transactions du mois sélectionné</h2> <ul id="liste-transactions"></ul> </section> <script src="script.js"></script> </body> </html><!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -8,7 +8,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
   <!-- ⚙️ Lien vers la page paramètres -->
   <a id="btn-parametres" href="parametres.html">⚙️ Paramètres</a>
 
@@ -48,7 +47,6 @@
         <option value="entrée">➕ Entrée</option>
         <option value="sortie">➖ Sortie</option>
       </select>
-
       <input type="number" step="0.01" id="montant" placeholder="Montant (€)" required />
       <select id="categorie" required></select>
       <input type="text" id="sous-categorie" placeholder="Sous-catégorie (ex: Lidl)" />
