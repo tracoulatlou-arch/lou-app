@@ -1,4 +1,4 @@
-/* ================================ STYLE GLOBAL - Bleu nuit / Violet clair ==================================*/
+/* ================================ THEME ==================================*/
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap');
 
 :root{
@@ -23,17 +23,25 @@ body{
 }
 
 /* --- Titres --- */
-h1,h2,h3,header h1{
+h1,h2,h3{
   font-family:"Space Grotesk",sans-serif;
   letter-spacing:.5px;
   margin-bottom:10px;
   font-weight:700;
 }
-header h1{font-size:clamp(28px,4vw,42px);}
 h2{font-size:clamp(22px,3vw,28px);}
 h3{font-size:clamp(18px,2.5vw,22px);}
-header h1,#total-cumule{color:var(--title);}
-section h1,section h2,section h3{color:#050F2A;}
+
+/* --- En-tête centré --- */
+.header-titre{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;margin:0 auto;margin-top:60px;margin-bottom:2rem;width:100%;
+}
+.header-titre h1{
+  font-size:clamp(30px,5vw,46px);
+  letter-spacing:1.2px;text-transform:uppercase;color:var(--title);margin-bottom:.5rem;
+}
+#total-cumule{font-size:1.2rem;font-weight:600;color:var(--text);text-align:center;}
 
 /* --- Bouton menu hamburger (remplace ⚙️) --- */
 #btn-parametres{
@@ -45,139 +53,71 @@ section h1,section h2,section h3{color:#050F2A;}
   width:42px;height:42px;
 }
 #btn-parametres:hover{background:var(--decor);color:var(--bg);}
+.menu-icon{display:flex;flex-direction:column;justify-content:space-between;width:22px;height:16px;}
+.menu-icon span{display:block;height:3px;background-color:var(--decor);border-radius:3px;transition:.3s;}
+#btn-parametres:hover .menu-icon span{background-color:var(--bg);}
 
-/* --- Icône menu hamburger --- */
-.menu-icon {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 22px;
-  height: 16px;
-}
-
-.menu-icon span {
-  display: block;
-  height: 3px;
-  background-color: var(--decor);
-  border-radius: 3px;
-  transition: background-color 0.3s;
-}
-
-#btn-parametres:hover .menu-icon span {
-  background-color: var(--bg);
-}
-
-/* --- Cases principales --- */
-.row{
-  display:flex;flex-wrap:wrap;gap:40px;
-  justify-content:center;margin-top:40px;
-}
+/* --- Sections / cartes --- */
 section{
-  background:var(--case);color:#041226;
-  border-radius:var(--radius);padding:25px;
-  box-shadow:var(--shadow);flex:1;min-width:320px;
+  background:var(--case);color:#041226;border-radius:var(--radius);
+  padding:25px;box-shadow:var(--shadow);min-width:320px;margin-top:30px;
 }
-.row+section,section+section{margin-top:40px;}
-section.decor{background:var(--decor);color:#050F2A;}
+.panel{background:rgba(255,255,255,.9);border-radius:10px;padding:16px;}
+.two-col{display:grid;grid-template-columns:1fr;gap:18px;}
+@media (min-width:900px){
+  .two-col{grid-template-columns:1fr 1fr;}
+}
 
-/* --- Graphique --- */
-#graphique canvas{
-  width:100%!important;height:auto!important;
-  max-width:400px;margin:0 auto;border-radius:10px;
+/* --- Filtres Mois/Année --- */
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 8px;}
+.filters select{
+  padding:8px;border:1px solid var(--border);border-radius:8px;background:#F2FDFF;color:#050F2A;
+}
+
+/* --- KPI --- */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;}
+.kpi{background:#fff;border-radius:10px;padding:12px;border:1px solid rgba(0,0,0,.08);}
+.kpi-label{font-size:.9rem;color:#334;padding-bottom:2px;}
+.kpi-value{font-size:1.15rem;font-weight:800;color:#05172e;}
+.hint{margin-top:8px;font-size:.86rem;color:#144;opacity:.9}
+
+/* --- Liste comptes cumulés --- */
+.accounts-list{list-style:none;margin-top:10px;padding-left:0;}
+.accounts-list li{
+  background:rgba(255,255,255,.92);color:#050F2A;border-radius:8px;padding:10px;margin-bottom:8px;
+  border:1px solid rgba(4,18,38,0.12);display:flex;justify-content:space-between;gap:10px;
+}
+
+/* --- Graphiques --- */
+#graphique canvas,#chart-annee,#camembert{
+  width:100%!important;height:auto!important;max-width:520px;margin:0 auto;border-radius:10px;
   background:rgba(255,255,255,.05);border:1px solid var(--border);
 }
 
 /* --- Formulaire --- */
 form{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
 form input,form select{
-  flex:1 1 180px;padding:10px;
-  border:1px solid var(--border);border-radius:8px;
-  background:#F2FDFF;color:#050F2A;font-size:1rem;
+  flex:1 1 180px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#F2FDFF;color:#050F2A;font-size:1rem;
 }
 form button{
-  padding:10px 20px;border:none;border-radius:8px;
-  background:var(--decor);color:#050F2A;font-weight:600;
-  cursor:pointer;transition:.2s;
+  padding:10px 20px;border:none;border-radius:8px;background:var(--decor);color:#050F2A;font-weight:600;cursor:pointer;transition:.2s;
 }
 form button:hover{background:var(--text);color:var(--bg);}
 
-/* --- Totaux --- */
-#solde-total{font-weight:700;font-size:1.1rem;color:#050F2A;margin-top:10px;}
-#total-cumule{font-weight:700;font-size:1.1rem;margin-top:10px;}
-
-/* --- Comptes --- */
-#comptes-list li{
-  background:rgba(255,255,255,.85);color:#050F2A;
-  border-radius:8px;padding:10px;margin-bottom:10px;
-}
-
 /* --- Transactions à deux colonnes --- */
-.transactions-grid{
-  display:flex;justify-content:space-between;gap:20px;
-}
-.col-sorties,.col-entrees{
-  flex:1;border-radius:10px;padding:10px;
-}
+.transactions-grid{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.col-sorties,.col-entrees{flex:1;border-radius:10px;padding:10px;min-width:280px;}
 .col-sorties{background:#ffdcdc;}
 .col-entrees{background:#d5ffe0;}
 .col-sorties h3,.col-entrees h3{text-align:center;color:#050F2A;margin-bottom:10px;}
 .col-sorties li,.col-entrees li{
-  list-style:none;background:transparent;color:#050F2A;
-  padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05);
+  list-style:none;background:transparent;color:#050F2A;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05);
 }
 .col-sorties li:last-child,.col-entrees li:last-child{border-bottom:none;}
 .btn-supprimer{
-  background:var(--decor);border:none;border-radius:6px;
-  color:#050F2A;padding:4px 8px;margin-left:6px;cursor:pointer;
-  transition:.2s;
+  background:var(--decor);border:none;border-radius:6px;color:#050F2A;padding:4px 8px;margin-left:6px;cursor:pointer;transition:.2s;
 }
 .btn-supprimer:hover{background:#ff4b4b;color:white;}
 
 /* --- Liens --- */
-a{color:var(--decor);}
-a:hover{text-decoration:underline;}
-
-/* ===== Vue globale : sous-titre Épargne ===== */
-#comptes-list .group-title{
-  margin: 14px 0 8px;
-  padding: 6px 10px;
-  background: rgba(184,169,255,0.25);
-  border: 1px solid rgba(184,169,255,0.6);
-  color: #050F2A;
-  border-radius: 8px;
-  font-weight: 700;
-}
-
-/* (optionnel) petites cartes compte */
-#comptes-list .account-card{
-  background: rgba(255,255,255,0.92);
-  border: 1px solid rgba(4,18,38,0.12);
-}
-/* --- En-tête centré au milieu de la page --- */
-.header-titre {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  margin: 0 auto;
-  margin-top: 60px;
-  margin-bottom: 2rem;
-  width: 100%;
-  position: relative;
-}
-
-.header-titre h1 {
-  font-size: clamp(30px, 5vw, 46px);
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--title);
-  margin-bottom: 0.5rem;
-}
-
-#total-cumule {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--text);
-  text-align: center;
-}
+a{color:var(--decor);} a:hover{text-decoration:underline;}
