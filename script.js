@@ -12,10 +12,43 @@ document.addEventListener("DOMContentLoaded", () => {
     "#93ddffff", "#19574cff", "#b10d5fff", "#B8A9FF", "#7BBBFF"
   ];
 
-  // 🧾 Comptes affichés en CUMULÉ (toutes périodes)
+  // 💼 Comptes à afficher dans la partie "Cumulé"
   const ACCOUNTS_CUMULATIFS = [
-    "Révolut", "Trade Republic", "Epargne PEL", "Epargne LIV. A", "Fortunéo"
+    "Révolut", "Trade Republic", "Épargne PEL", "Épargne LIV. A", "Fortunéo"
   ];
+
+  // 📋 --- LISTES FIXES À MODIFIER ICI ---
+  const CATEGORIES_FIXES = [
+    "Loyer",
+    "Eléctricité / Gaz",
+    "Courses",
+    "Essence",
+    "Assurance",
+    "Garentie",
+    "Sorties",
+    "Restaurants",
+    "Liquide",
+    "Apple",
+    "Forfait téléphone",
+    "Epargne",
+    "Loisirs",
+    "Transport",
+    "Shopping",
+    "Virement bénéficiaire",
+    "Autre",
+    "Salaire",
+    "CAF"
+  ];
+
+  const COMPTES_FIXES = [
+    "Compte Courant",
+    "Épargne PEL",
+    "Épargne Liv. A",
+    "Révolut",
+    "Trade Republic",
+    "Fortunéo"
+  ];
+  // --------------------------------------
 
   // 🔌 Sélecteurs DOM
   const form = document.getElementById("form-ajout");
@@ -34,27 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalCumuleDiv = document.getElementById("total-cumule");
   const camembert = document.getElementById("camembert");
 
-  /* ----------------------------- Utils : LocalStorage & Selects ------------------------------*/
-  const getStoredArray = (key, fallback) => {
-    try {
-      const raw = localStorage.getItem(key);
-      const arr = raw ? JSON.parse(raw) : null;
-      return Array.isArray(arr) ? arr : fallback;
-    } catch {
-      return fallback;
-    }
-  };
-
-  const getCategories = () =>
-    getStoredArray("categories", ["Loyer", "Courses", "Essence", "Assurance", "Sorties", "Salaire", "Autres"]);
-  const getComptes = () =>
-    getStoredArray("comptes", ["Compte Courant", "Révolut", "Trade Republic", "Epargne PEL", "Epargne LIV. A", "Fortunéo"]);
-
+  /* ----------------------------- Remplir les listes ------------------------------*/
   function remplirSelects() {
-    const categories = getCategories();
-    const comptes = getComptes();
-    categorieInput.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-    compteInput.innerHTML = comptes.map(c => `<option value="${c}">${c}</option>`).join('');
+    categorieInput.innerHTML = CATEGORIES_FIXES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    compteInput.innerHTML = COMPTES_FIXES.map(c => `<option value="${c}">${c}</option>`).join('');
   }
 
   /* ----------------------------- Filtres (mois / année / date) ------------------------------*/
