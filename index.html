@@ -16,23 +16,23 @@
     </div>
   </a>
 
-  <!-- En-tête centré (sans solde) -->
+  <!-- En-tête centré (sans solde en doublon) -->
   <header class="header-titre">
     <h1>SUIVI FINANCIER</h1>
   </header>
 
-  <!-- 🟪 Bloc 1 : Vue globale -->
+  <!-- 🟪 Bloc 1 : Vue globale (solde cumulé + totaux par compte / courbe annuelle) -->
   <section id="global" class="two-col">
     <div class="panel">
       <h2>Vue globale</h2>
 
-      <div class="kpi">
-        <div class="kpi-label">Solde total cumulé</div>
-        <div class="kpi-value" id="kpi-solde-cumule">0 €</div>
-      </div>
-
-      <h3 class="section-sub">Total par compte</h3>
-      <ul id="comptes-cumules" class="accounts-list"></ul>
+      <!-- Solde cumulé et comptes présentés de la même manière -->
+      <ul id="comptes-cumules" class="accounts-list">
+        <li>
+          <span>Solde total cumulé</span>
+          <strong id="kpi-solde-cumule">0 €</strong>
+        </li>
+      </ul>
     </div>
 
     <div class="panel">
@@ -44,7 +44,7 @@
     </div>
   </section>
 
-  <!-- 🟦 Bloc 2 : Mois sélectionné -->
+  <!-- 🟦 Bloc 2 : Mois sélectionné (KPI Compte Courant + épargne + camembert + légende) -->
   <section id="mois-section" class="two-col">
     <div class="panel">
       <h2>Mois sélectionné</h2>
@@ -115,7 +115,7 @@
   <!-- 📜 Liste des transactions -->
   <section id="transactions">
     <h2>Transactions du mois sélectionné</h2>
-    <ul id="liste-transactions" class="tx-list"></ul>
+    <ul id="liste-transactions"></ul>
   </section>
 
   <script src="script.js"></script>
