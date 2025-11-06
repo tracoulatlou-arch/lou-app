@@ -21,12 +21,10 @@
     <h1>SUIVI FINANCIER</h1>
   </header>
 
-  <!-- 🟪 Bloc 1 : Vue globale (solde cumulé + totaux par compte / courbe annuelle) -->
+  <!-- 🟪 Bloc 1 : Vue globale -->
   <section id="global" class="two-col">
     <div class="panel">
       <h2>Vue globale</h2>
-
-      <!-- Solde cumulé et comptes présentés de la même manière -->
       <ul id="comptes-cumules" class="accounts-list">
         <li>
           <span>Solde total cumulé</span>
@@ -44,7 +42,7 @@
     </div>
   </section>
 
-  <!-- 🟦 Bloc 2 : Mois sélectionné (KPI Compte Courant + épargne + camembert + légende) -->
+  <!-- 🟦 Bloc 2 : Mois sélectionné -->
   <section id="mois-section" class="two-col">
     <div class="panel">
       <h2>Mois sélectionné</h2>
@@ -60,18 +58,9 @@
 
       <h3 class="section-sub">Compte Courant</h3>
       <div class="kpi-grid">
-        <div class="kpi">
-          <div class="kpi-label">Entrées</div>
-          <div class="kpi-value" id="kpi-entrees">0 €</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Sorties</div>
-          <div class="kpi-value" id="kpi-sorties">0 €</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Solde du mois</div>
-          <div class="kpi-value" id="kpi-solde-mois">0 €</div>
-        </div>
+        <div class="kpi"><div class="kpi-label">Entrées</div><div class="kpi-value" id="kpi-entrees">0 €</div></div>
+        <div class="kpi"><div class="kpi-label">Sorties</div><div class="kpi-value" id="kpi-sorties">0 €</div></div>
+        <div class="kpi"><div class="kpi-label">Solde du mois</div><div class="kpi-value" id="kpi-solde-mois">0 €</div></div>
       </div>
 
       <h3 class="section-sub" style="margin-top:14px;">Épargne</h3>
@@ -112,7 +101,7 @@
     </form>
   </section>
 
-  <!-- 📜 Liste des transactions -->
+  <!-- 📜 Transactions -->
   <section id="transactions">
     <h2>Transactions du mois sélectionné</h2>
     <ul id="liste-transactions"></ul>
