@@ -1,6 +1,7 @@
+/* ================================ THEME ==================================*/
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@600;700&display=swap');
 
-:root {
+:root{
   --bg:#050F2A;
   --text:#F2FDFF;
   --title:#B8A9FF;
@@ -9,218 +10,194 @@
   --border:rgba(255,255,255,.15);
   --radius:12px;
   --shadow:0 4px 20px rgba(0,0,0,.3);
+
+  /* Réglages rapides */
+  --panel-gap:18px;
+  --panel-padding:16px;
+  --canvas-max:900px;
+  --chart-height:340px;
+
+  --tx-amount-w:110px;
+  --tx-account-w:160px;
+  --tx-action-w:40px;
 }
 
 /* --- Base --- */
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: "Inter", sans-serif;
-  padding: 25px;
-  line-height: 1.6;
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Inter",sans-serif;
+  padding:25px;
+  line-height:1.6;
 }
 
-h1, h2, h3 {
-  font-family: "Space Grotesk", sans-serif;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
-  font-weight: 700;
+/* --- Titres --- */
+h1,h2,h3{
+  font-family:"Space Grotesk",sans-serif;
+  letter-spacing:.5px;
+  margin-bottom:10px;
+  font-weight:700;
+}
+h2{font-size:clamp(22px,3vw,28px);}
+h3{font-size:clamp(18px,2.5vw,22px);}
+.section-sub{
+  font-size:clamp(16px,2.2vw,20px);
+  color:#05172e;
+  margin-top:6px;
 }
 
-header h1 {
-  text-align: center;
-  font-size: clamp(28px, 4vw, 42px);
-  color: var(--title);
-  margin-bottom: 40px;
+/* --- En-tête centré --- */
+.header-titre{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;margin:0 auto;margin-top:60px;margin-bottom:2rem;width:100%;
+}
+.header-titre h1{
+  font-size:clamp(30px,5vw,46px);
+  letter-spacing:1.2px;text-transform:uppercase;color:var(--title);margin-bottom:.5rem;
 }
 
-/* --- Lien paramètres --- */
-#btn-parametres {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: transparent;
-  border: 1px solid var(--decor);
-  color: var(--text);
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 1.3rem;
-  text-decoration: none;
-  transition: .2s;
+/* --- Bouton menu hamburger --- */
+#btn-parametres{
+  position:absolute;top:20px;left:20px;
+  background:transparent;border:1px solid var(--decor);
+  color:var(--text);padding:10px;border-radius:20px;
+  text-decoration:none;transition:.2s;
+  display:flex;align-items:center;justify-content:center;
+  width:42px;height:42px;
 }
-#btn-parametres:hover {
-  background: var(--decor);
-  color: var(--bg);
+#btn-parametres:hover{background:var(--decor);color:var(--bg);}
+.menu-icon{display:flex;flex-direction:column;justify-content:space-between;width:22px;height:16px;}
+.menu-icon span{display:block;height:3px;background-color:var(--decor);border-radius:3px;transition:.3s;}
+#btn-parametres:hover .menu-icon span{background-color:var(--bg);}
+
+/* --- Sections / cartes --- */
+section{
+  background:var(--case);color:#041226;border-radius:var(--radius);
+  padding:25px;box-shadow:var(--shadow);min-width:320px;margin-top:30px;
+}
+.panel{background:rgba(255,255,255,.9);border-radius:10px;padding:var(--panel-padding);position:relative;}
+.two-col{
+  display:grid;gap:var(--panel-gap);
+  grid-template-columns:1fr;  /* mobile */
+}
+@media (min-width:900px){
+  .two-col{grid-template-columns:1.1fr 0.9fr;} /* 60/40 */
 }
 
-/* --- Sections --- */
-section {
-  background: var(--case);
-  color: #041226;
-  border-radius: var(--radius);
-  padding: 25px;
-  box-shadow: var(--shadow);
-  margin-top: 40px;
-}
-.two-col {
-  display: grid;
-  gap: 40px;
-}
-@media(min-width:1000px) {
-  .two-col {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-/* --- Comptes list --- */
-.accounts-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.accounts-list li {
-  background: rgba(255,255,255,0.9);
-  color: #050F2A;
-  border-radius: 8px;
-  padding: 10px 15px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* --- Filtres Mois/Année --- */
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 8px;}
+.filters select{
+  padding:8px;border:1px solid var(--border);border-radius:8px;background:#F2FDFF;color:#050F2A;
 }
 
 /* --- KPI --- */
-.kpi-grid {
-  display: grid;
-  gap: 12px;
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;}
+.kpi{background:#fff;border-radius:10px;padding:12px;border:1px solid rgba(0,0,0,.08);}
+.kpi-label{font-size:.9rem;color:#334;padding-bottom:2px;}
+.kpi-value{font-size:1.15rem;font-weight:800;color:#05172e;}
+.hint{margin-top:8px;font-size:.86rem;color:#144;opacity:.9}
+@media (max-width:1100px){ .kpi-grid{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:600px){ .kpi-grid{grid-template-columns:1fr;} }
+
+/* --- Liste comptes cumulés --- */
+.accounts-list{list-style:none;margin-top:10px;padding-left:0;}
+.accounts-list li{
+  background:rgba(255,255,255,.92);color:#050F2A;border-radius:8px;padding:8px 10px;margin-bottom:8px;
+  border:1px solid rgba(4,18,38,0.12);display:flex;justify-content:space-between;gap:10px;
 }
-.kpi {
-  background: rgba(255,255,255,0.9);
-  border-radius: 8px;
-  padding: 10px;
-  color: #050F2A;
-  font-weight: 600;
-  text-align: left;
+
+/* --- Liste épargne (mois) --- */
+.savings-list{list-style:none;margin-top:8px;padding-left:0;}
+.savings-list li{
+  background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;padding:8px 10px;margin-bottom:8px;
+  display:flex;justify-content:space-between;gap:10px;
 }
-.kpi-value {
-  font-weight: 700;
-}
+.savings-list .s-left{font-weight:700;}
+.savings-list .s-right{display:flex;gap:12px;}
+.savings-list .badge{padding:2px 8px;border-radius:12px;font-weight:700;white-space:nowrap;}
+.badge-in{background:#d5ffe0;color:#053b1a;border:1px solid #96d1a7;}
+.badge-out{background:#ffdcdc;color:#5a0c0c;border:1px solid #f2a1a1;}
 
 /* --- Graphiques --- */
-.chart-wrap {
-  height: 320px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  padding: 6px;
+.chart-wrap{
+  height:var(--chart-height);
+  border-radius:10px;background:rgba(255,255,255,.05);
+  border:1px solid var(--border);padding:6px;
 }
-canvas {
-  width: 100% !important;
-  height: 100% !important;
+#chart-annee,#camembert{
+  width:100%!important;max-width:var(--canvas-max);display:block;
 }
 
-/* --- Catégories légende --- */
-.cat-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 10px;
+/* --- Panneau catégories (camembert à gauche, légende à droite) --- */
+.panel-cats .cats-title{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
 }
-.cat-row {
-  display: flex;
-  justify-content: space-between;
-  background: rgba(255,255,255,0.85);
-  color: #050F2A;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 0.95rem;
-  white-space: nowrap;
+.chip-btn{
+  border:1px solid rgba(4,18,38,0.15);
+  background:#fff;border-radius:14px;padding:4px 10px;cursor:pointer;
+  font-weight:700;color:#05172e;
+}
+.chip-btn:hover{background:#f4f7ff;}
+
+.cats-grid{
+  display:grid;gap:12px;
+  grid-template-columns:1fr; /* mobile */
+}
+@media (min-width:900px){
+  .cats-grid{ grid-template-columns:1fr 1fr; } /* camembert / légende */
 }
 
-/* --- Bouton bascule % / € --- */
-#toggle-metric {
-  float: right;
-  border: none;
-  background: var(--decor);
-  color: var(--bg);
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-weight: bold;
+.cat-legend{
+  display:grid;gap:8px;align-content:start;
+  grid-template-columns:1fr;
 }
-
-/* --- Transactions --- */
-.transactions-grid {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
+@media (min-width:600px){
+  .cat-legend{ grid-template-columns:repeat(2, minmax(260px,1fr)); } /* colonnes plus larges */
 }
-.col-entrees, .col-sorties {
-  flex: 1;
-  border-radius: 10px;
-  padding: 10px;
+.cat-row{
+  background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;
+  padding:8px 10px;display:flex;justify-content:space-between;gap:10px;align-items:center;
 }
-.col-entrees { background: #d5ffe0; }
-.col-sorties { background: #ffdcdc; }
-.col-entrees h3, .col-sorties h3 {
-  text-align: center;
-  color: #050F2A;
-  margin-bottom: 10px;
-}
-.tx-row {
-  display: grid;
-  grid-template-columns: 100px 1fr 120px 30px;
-  align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-.tx-amount, .tx-account, .tx-desc {
-  color: #050F2A;
-  font-size: 0.95rem;
-}
-.tx-actions {
-  text-align: right;
-}
-.btn-delete-square {
-  background: var(--decor);
-  border: none;
-  border-radius: 6px;
-  color: #050F2A;
-  width: 24px;
-  height: 24px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: .2s;
-}
-.btn-delete-square:hover {
-  background: #ff4b4b;
-  color: white;
-}
+.cat-row .cat-label{flex:1 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;color:#05172e;}
+.cat-row .cat-value{white-space:nowrap;font-weight:800;color:#05172e;}
 
 /* --- Formulaire --- */
-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+form{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;}
+form input,form select{
+  flex:1 1 180px;padding:10px;border:1px solid var(--border);border-radius:8px;background:#F2FDFF;color:#050F2A;font-size:1rem;
 }
-form input, form select {
-  flex: 1 1 180px;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #F2FDFF;
-  color: #050F2A;
+form button{
+  padding:10px 20px;border:none;border-radius:8px;background:var(--decor);color:#050F2A;font-weight:600;cursor:pointer;transition:.2s;
 }
-form button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background: var(--decor);
-  color: #050F2A;
-  font-weight: 600;
-  cursor: pointer;
+form button:hover{background:var(--text);color:var(--bg);}
+
+/* --- Transactions : disposition en colonnes --- */
+.tx-list{list-style:none;padding-left:0;margin:0;}
+.tx-row{
+  background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;
+  padding:8px 10px;margin-bottom:8px;display:grid;align-items:center;gap:8px;
+  grid-template-columns: var(--tx-amount-w) 1fr var(--tx-account-w) var(--tx-action-w);
 }
-form button:hover {
-  background: var(--text);
-  color: var(--bg);
+.tx-amount{font-weight:800;color:#05172e;text-align:right;white-space:nowrap;}
+.tx-desc{color:#05172e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tx-account{color:#334;white-space:nowrap;text-align:left;}
+.tx-actions{display:flex;justify-content:flex-end;align-items:center;}
+.btn-delete-square{
+  width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;
+  background:var(--decor);color:#050F2A;font-weight:900;line-height:1;
+  display:flex;align-items:center;justify-content:center;
 }
+.btn-delete-square:hover{filter:brightness(1.05);}
+
+/* --- Anciennes listes (désactivées visuellement mais gardées pour réemploi) --- */
+.transactions-grid{display:flex;gap:20px;flex-wrap:wrap;}
+.col-sorties,.col-entrees{flex:1;border-radius:10px;padding:10px;min-width:280px;}
+.col-sorties{background:#ffdcdc;}
+.col-entrees{background:#d5ffe0;}
+.col-sorties h3,.col-entrees h3{text-align:center;color:#050F2A;margin-bottom:10px;}
+.col-sorties li,.col-entrees li{list-style:none;background:transparent;color:#050F2A;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.05);}
+.col-sorties li:last-child,.col-entrees li:last-child{border-bottom:none;}
+
+/* --- Liens --- */
+a{color:var(--decor);} a:hover{text-decoration:underline;}

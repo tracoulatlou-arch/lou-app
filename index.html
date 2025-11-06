@@ -3,64 +3,87 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Suivi Financier</title>
+  <title>Suivi financier</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <!-- ⚙️ Lien paramètres -->
-  <a id="btn-parametres" href="parametres.html">☰</a>
+  <!-- 🍔 Bouton menu (vers paramètres) -->
+  <a id="btn-parametres" href="parametres.html" title="Paramètres">
+    <div class="menu-icon">
+      <span></span><span></span><span></span>
+    </div>
+  </a>
 
-  <header>
-    <h1>Suivi Financier</h1>
+  <!-- En-tête centré (sans solde) -->
+  <header class="header-titre">
+    <h1>SUIVI FINANCIER</h1>
   </header>
 
-  <!-- ========================== VUE GLOBALE ========================== -->
+  <!-- 🟪 Bloc 1 : Vue globale -->
   <section id="global" class="two-col">
-    <div>
+    <div class="panel">
       <h2>Vue globale</h2>
-      <ul id="comptes-cumules" class="accounts-list">
-        <li>
-          <span>Solde total cumulé</span>
-          <strong id="kpi-solde-cumule">0 €</strong>
-        </li>
-      </ul>
+
+      <div class="kpi">
+        <div class="kpi-label">Solde total cumulé</div>
+        <div class="kpi-value" id="kpi-solde-cumule">0 €</div>
+      </div>
+
+      <h3 class="section-sub">Total par compte</h3>
+      <ul id="comptes-cumules" class="accounts-list"></ul>
     </div>
-    <div>
+
+    <div class="panel">
       <h2>Évolution annuelle</h2>
       <div class="chart-wrap">
         <canvas id="chart-annee"></canvas>
       </div>
+      <div class="hint">Année affichée : <span id="annee-actuelle"></span></div>
     </div>
   </section>
 
-  <!-- ========================== MOIS SÉLECTIONNÉ ========================== -->
+  <!-- 🟦 Bloc 2 : Mois sélectionné -->
   <section id="mois-section" class="two-col">
-    <div>
+    <div class="panel">
       <h2>Mois sélectionné</h2>
-      <label>Mois :
-        <select id="mois-select"></select>
-      </label>
-      <label>Année :
-        <select id="annee-select"></select>
-      </label>
 
-      <h3>Compte Courant</h3>
-      <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-label">Entrées</div><div class="kpi-value" id="kpi-entrees">0 €</div></div>
-        <div class="kpi"><div class="kpi-label">Sorties</div><div class="kpi-value" id="kpi-sorties">0 €</div></div>
-        <div class="kpi"><div class="kpi-label">Solde du mois</div><div class="kpi-value" id="kpi-solde-mois">0 €</div></div>
+      <div class="filters">
+        <label>Mois :
+          <select id="mois-select"></select>
+        </label>
+        <label>Année :
+          <select id="annee-select"></select>
+        </label>
       </div>
 
-      <h3>Épargne</h3>
-      <ul id="epargne-lignes" class="accounts-list"></ul>
+      <h3 class="section-sub">Compte Courant</h3>
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Entrées</div>
+          <div class="kpi-value" id="kpi-entrees">0 €</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Sorties</div>
+          <div class="kpi-value" id="kpi-sorties">0 €</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Solde du mois</div>
+          <div class="kpi-value" id="kpi-solde-mois">0 €</div>
+        </div>
+      </div>
+
+      <h3 class="section-sub" style="margin-top:14px;">Épargne</h3>
+      <ul id="epargne-lignes" class="savings-list"></ul>
     </div>
 
-    <div>
-      <h2>Dépenses par catégorie</h2>
-      <button id="toggle-metric" title="Basculer en % ou €">%</button>
-      <div class="two-col-inner">
+    <div class="panel panel-cats">
+      <h2 class="cats-title">Dépenses par catégorie
+        <button id="toggle-metric" class="chip-btn" title="Basculer € / %">%</button>
+      </h2>
+
+      <div class="cats-grid">
         <div class="chart-wrap">
           <canvas id="camembert"></canvas>
         </div>
@@ -69,7 +92,7 @@
     </div>
   </section>
 
-  <!-- ========================== AJOUT DE TRANSACTION ========================== -->
+  <!-- ➕ Formulaire d’ajout -->
   <section id="formulaire-ajout">
     <h2>Ajouter une transaction</h2>
     <form id="form-ajout">
@@ -78,6 +101,7 @@
         <option value="entrée">Entrée</option>
         <option value="sortie">Sortie</option>
       </select>
+
       <input type="number" step="0.01" id="montant" placeholder="Montant (€)" required />
       <select id="categorie" required></select>
       <input type="text" id="sous-categorie" placeholder="Sous-catégorie (ex: Lidl)" />
@@ -88,10 +112,10 @@
     </form>
   </section>
 
-  <!-- ========================== TRANSACTIONS ========================== -->
+  <!-- 📜 Liste des transactions -->
   <section id="transactions">
     <h2>Transactions du mois sélectionné</h2>
-    <ul id="liste-transactions"></ul>
+    <ul id="liste-transactions" class="tx-list"></ul>
   </section>
 
   <script src="script.js"></script>
