@@ -9,9 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🎨 Couleurs camembert (ordre = légende)
   const PIE_COLORS = [
-    "#59236E", "#0A1A45", "#1C9BE4", "#0044FF", "#3F2E9B",
-    "#AA4BCF", "#22CAAE", "#550034", "#5D6970", "#6A88FF",
-    "#93DDFF", "#19574C", "#B10D5F", "#B8A9FF", "#7BBBFF"
+    "#6ce5e8", "#41b8d5", "#2d8bba", "#506e9a", "#635a92",
+    "#7e468a", "#942270", "#c12862", "#eb4e57", "#ff7742",
+    "#ffae3a", "#efda5b", "#a6d664", "#5bbc6b", "#189f74",
+   "#228b7d", "#377376", "#21667d", "#176192", "#012238",  
   ];
 
   // 📋 Catégories & Comptes fixes (avec Santé + Autre)
