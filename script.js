@@ -9,22 +9,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🎨 Couleurs camembert
   const PIE_COLORS = [
-    "#6ce5e8", "#41b8d5", "#2d8bba", "#506e9a", "#635a92",
-    "#7e468a", "#942270", "#c12862", "#eb4e57", "#6A88FF",
-    "#ff7742", "#ffae3a", "#efda5b", "#a6d664", "#189f74", "#228b7d", "#377376", "#21667d", "#176192", "#000000"
+    "#59236E", "#0A1A45", "#1C9BE4", "#0044FF", "#3F2E9B",
+    "#AA4BCF", "#22CAAE", "#550034", "#5D6970", "#6A88FF",
+    "#93DDFF", "#19574C", "#B10D5F", "#B8A9FF", "#7BBBFF"
   ];
 
   // 🧮 ———— Catégories et Comptes FIXES ————
   const CATEGORIES_FIXES = [
-    "Loyer","Courses","Essence","Assurance","Sorties","Salaire",
-    "Restaurants","Liquide","Électricité / Gaz","Apple",
-    "Forfait téléphone","Épargne","Transport","Shopping",
-    "Garantie","Virement bénéficiaire","CAF","Santé","Autre"
+    "Apple", "Assurance", "Autre", "CAF", "Courses", "Électricité / Gaz",
+    "Épargne", "Essence", "Forfait téléphone", "Garantie", "Liquide",
+    "Loyer", "Restaurants", "Salaire", "Santé", "Shopping", "Sorties",
+    "Transport", "Virement bénéficiaire"
   ];
+
   const COMPTES_FIXES = [
-    "Compte Courant","Épargne PEL","Épargne Liv. A",
-    "Révolut","Trade Republic","Fortunéo"
+    "Compte Courant", "Épargne PEL", "Épargne Liv. A",
+    "Révolut", "Trade Republic", "Fortunéo"
   ];
+
   const SAVINGS_ORDER = ["Épargne PEL","Épargne Liv. A","Révolut","Trade Republic","Fortunéo"];
 
   // 🔌 Sélecteurs DOM
@@ -61,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
     compteInput.innerHTML = COMPTES_FIXES.map(c => `<option value="${c}">${c}</option>`).join('');
   }
 
-  /* ----------------------------- Filtres (mois / année / date) ------------------------------*/
+  /* ----------------------------- Filtres ------------------------------*/
   function getMoisNom(i) {
     return ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"][i];
   }
@@ -78,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const now = new Date();
     const mois = String(now.getMonth() + 1).padStart(2, '0');
     moisAnneeInput.value = `${now.getFullYear()}-${mois}`;
-
     anneeActuelleSpan.textContent = anneeSelect.value;
   }
 
@@ -86,8 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
   async function chargerTransactions() {
     const res = await fetch(sheetBestURL);
     transactions = await res.json();
-    afficherGlobal();        // bloc 1
-    afficherMoisSection();   // bloc 2 + liste
+    afficherGlobal();
+    afficherMoisSection();
   }
 
   /* ====== Bloc 1 : Vue globale ====== */
@@ -101,11 +102,9 @@ document.addEventListener("DOMContentLoaded", () => {
       compte: tx.compte || ""
     }));
 
-    // Solde cumulé (toutes périodes)
     const totalCumule = txNorm.reduce((acc, tx) => acc + (tx.type === "sortie" ? -tx.montant : tx.montant), 0);
     kpiSoldeCumule.textContent = `${totalCumule.toFixed(2)} €`;
 
-    // Totaux par compte (cumulés)
     const totauxParCompte = {};
     txNorm.forEach(tx => {
       const sens = tx.type === "sortie" ? -1 : 1;
@@ -116,75 +115,53 @@ document.addEventListener("DOMContentLoaded", () => {
     const comptesConnus = [...COMPTES_FIXES];
     const autres = Object.keys(totauxParCompte).filter(c => c && !comptesConnus.includes(c));
     const ordre = [...comptesConnus, ...autres];
-
     comptesCumulesUl.innerHTML = ordre.map(c => `
-      <li>
-        <span>${c}</span>
-        <strong>${(totauxParCompte[c] || 0).toFixed(2)} €</strong>
-      </li>
+      <li><span>${c}</span><strong>${(totauxParCompte[c] || 0).toFixed(2)} €</strong></li>
     `).join('');
 
-    // Graphique annuel (solde net cumulatif mois par mois)
-    const annee = parseInt(anneeSelect.value, 10) || new Date().getFullYear();
-    anneeActuelleSpan.textContent = annee;
-
+    // Graphique annuel
+    const annee = parseInt(anneeSelect.value, 10);
     const netParMois = Array(12).fill(0);
     txNorm.filter(tx => tx.an === annee && tx.mois >= 1 && tx.mois <= 12).forEach(tx => {
       const idx = tx.mois - 1;
       netParMois[idx] += (tx.type === "sortie" ? -tx.montant : tx.montant);
     });
-
     const cumulParMois = netParMois.reduce((arr, val) => {
-      const prev = arr.length ? arr[arr.length - 1] : 0;
-      arr.push(prev + val);
+      arr.push((arr[arr.length - 1] || 0) + val);
       return arr;
     }, []);
-
     if (lineChart) lineChart.destroy();
     lineChart = new Chart(chartAnnee, {
       type: "line",
       data: {
         labels: Array.from({length:12}, (_,i)=>getMoisNom(i)),
-        datasets: [{
-          label: "Solde cumulatif",
-          data: cumulParMois,
-          fill: false,
-          tension: 0.25
-        }]
+        datasets: [{ label: "Solde cumulatif", data: cumulParMois, fill: false, tension: 0.25 }]
       },
-      options: {
-        maintainAspectRatio: false,
-        responsive: true,
-        plugins: { legend: { display: true, position: 'bottom' } },
-        scales: { y: { ticks: { callback: v => `${Number(v).toFixed(0)} €` } } }
-      }
+      options: { maintainAspectRatio:false, responsive:true, plugins:{ legend:{display:true,position:'bottom'} } }
     });
   }
 
   /* ====== Bloc 2 : Mois sélectionné ====== */
   function afficherMoisSection() {
-    const moisFiltre = parseInt(moisSelect.value, 10);     // 0-11
+    const moisFiltre = parseInt(moisSelect.value, 10);
     const anneeFiltre = parseInt(anneeSelect.value, 10);
-
-    const txNorm = transactions.map((tx, index) => {
-      const [annee, mois] = String(tx.date || "").split("-");
+    const txNorm = transactions.map(tx => {
+      const [a, m] = String(tx.date || "").split("-");
       return {
-        ...tx, index,
-        mois: parseInt(mois, 10),
-        annee: parseInt(annee, 10),
-        montant: parseFloat(tx.montant || 0),
+        ...tx,
+        mois: parseInt(m,10),
+        annee: parseInt(a,10),
+        montant: parseFloat(tx.montant||0),
         compte: tx.compte || "",
         categorie: tx.categorie || "",
-        type: tx.type || "",
         sousCategorie: tx.sousCategorie || "",
         description: tx.description || "",
+        type: tx.type || "",
         timestamp: tx.timestamp || ""
       };
     });
-
     const moisTx = txNorm.filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre);
 
-    /* --- KPI Compte Courant uniquement --- */
     const ccTx = moisTx.filter(t => t.compte === "Compte Courant");
     const totalEntrees = ccTx.filter(t => t.type === "entrée").reduce((a,t)=>a+t.montant,0);
     const totalSorties = ccTx.filter(t => t.type === "sortie").reduce((a,t)=>a+t.montant,0);
@@ -193,7 +170,6 @@ document.addEventListener("DOMContentLoaded", () => {
     kpiSorties.textContent = `${totalSorties.toFixed(2)} €`;
     kpiSoldeMois.textContent = `${soldeMois.toFixed(2)} €`;
 
-    /* --- Épargne : lignes Entrées / Sorties --- */
     const parts = [];
     SAVINGS_ORDER.forEach(acc => {
       const t = moisTx.filter(x => x.compte === acc);
@@ -211,179 +187,108 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     savingsUl.innerHTML = parts.join("");
 
-    /* --- Camembert dépenses par catégorie (tri alphabétique) --- */
     const parCategorie = {};
     const sortiesTx = moisTx.filter(t => t.type === "sortie");
     sortiesTx.forEach(tx => {
       parCategorie[tx.categorie] = (parCategorie[tx.categorie] || 0) + tx.montant;
     });
-
-    // Trie alphabétique
-    const entries = Object.entries(parCategorie).sort((a,b)=> a[0].localeCompare(b[0], 'fr', {sensitivity:'base'}));
+    const entries = Object.entries(parCategorie).sort((a,b)=> a[0].localeCompare(b[0],'fr',{sensitivity:'base'}));
     const labels = entries.map(e=>e[0]);
     const values = entries.map(e=>e[1]);
     const totalSortiesMois = values.reduce((a,b)=>a+b,0);
 
     if (camembertChart) camembertChart.destroy();
-    camembertChart = new Chart(camembert, {
-      type: "pie",
-      data: {
-        labels,
-        datasets: [{ data: values, backgroundColor: PIE_COLORS }]
-      },
-      options: {
-        maintainAspectRatio: false,
-        responsive: true,
-        plugins: {
-          legend: { display: false }, // légende personnalisée à droite
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const v = ctx.parsed;
-                const p = totalSortiesMois ? (v/totalSortiesMois*100) : 0;
-                return `${ctx.label}: ${v.toFixed(2)} € (${p.toFixed(1)}%)`;
-              }
-            }
+    camembertChart = new Chart(camembert,{
+      type:"pie",
+      data:{labels,datasets:[{data:values,backgroundColor:PIE_COLORS}]},
+      options:{
+        maintainAspectRatio:false,responsive:true,
+        plugins:{legend:{display:false},tooltip:{callbacks:{
+          label:(ctx)=>{
+            const v=ctx.parsed;const p=totalSortiesMois?(v/totalSortiesMois*100):0;
+            return `${ctx.label}: ${v.toFixed(2)} € (${p.toFixed(1)}%)`;
           }
-        }
+        }}}
       }
     });
-
-    // Légende personnalisée (triée) + toggle € / %
-    renderCatLegend(labels, values, totalSortiesMois);
-
-    /* --- Transactions triées et affichées en colonnes --- */
+    renderCatLegend(labels,values,totalSortiesMois);
     renderTransactionsList(moisTx);
   }
 
-  function renderCatLegend(labels, values, total) {
-    const rows = labels.map((lab, i) => {
-      const v = values[i] || 0;
-      const pct = total ? (v/total*100) : 0;
-      const right = (legendMode === "percent") ? `${pct.toFixed(1)} %` : `${v.toFixed(2)} €`;
-      return `
-        <div class="cat-row">
-          <span class="cat-label">${lab}</span>
-          <span class="cat-value">${right}</span>
-        </div>
-      `;
+  function renderCatLegend(labels,values,total){
+    const rows=labels.map((lab,i)=>{
+      const v=values[i]||0;
+      const pct=total?(v/total*100):0;
+      const right=(legendMode==="percent")?`${pct.toFixed(1)} %`:`${v.toFixed(2)} €`;
+      return `<div class="cat-row"><span class="cat-label">${lab}</span><span class="cat-value">${right}</span></div>`;
     }).join("");
-    catLegendBox.innerHTML = rows;
-    toggleMetricBtn.textContent = (legendMode === "percent") ? "€" : "%";
-    toggleMetricBtn.setAttribute("title", (legendMode === "percent") ? "Afficher les montants en €" : "Afficher les pourcentages");
+    catLegendBox.innerHTML=rows;
+    toggleMetricBtn.textContent=(legendMode==="percent")?"€":"%";
   }
 
-  function renderTransactionsList(moisTx) {
-    // Sépare et trie alphabétiquement (catégorie + sous-cat + description)
-    const key = (tx) => (tx.categorie + " " + tx.sousCategorie + " " + tx.description).trim().toLowerCase();
+  function renderTransactionsList(moisTx){
+    const key=(tx)=>(tx.categorie+" "+tx.sousCategorie+" "+tx.description).trim().toLowerCase();
+    const entrees=moisTx.filter(tx=>tx.type==="entrée").sort((a,b)=>key(a).localeCompare(key(b)));
+    const sorties=moisTx.filter(tx=>tx.type==="sortie").sort((a,b)=>key(a).localeCompare(key(b)));
 
-    const entrees = moisTx.filter(tx => tx.type === "entrée").sort((a,b)=> key(a).localeCompare(key(b)));
-    const sorties = moisTx.filter(tx => tx.type === "sortie").sort((a,b)=> key(a).localeCompare(key(b)));
+    listeTransactions.innerHTML="";
+    const container=document.createElement("div");
+    container.className="transactions-grid";
 
-    listeTransactions.innerHTML = "";
+    const colSorties=document.createElement("div");
+    colSorties.className="col-sorties";
+    colSorties.innerHTML="<h3>Sorties</h3>";
 
-    // Générateur de ligne transaction
+    const colEntrees=document.createElement("div");
+    colEntrees.className="col-entrees";
+    colEntrees.innerHTML="<h3>Entrées</h3>";
+
     function makeTxRow(tx){
-      const sous = tx.sousCategorie ? ` > ${tx.sousCategorie}` : '';
-      const label = tx.description ? ` – ${tx.description}` : '';
-      const li = document.createElement("li");
-      li.className = "tx-row";
-      li.innerHTML = `
+      const sous=tx.sousCategorie?` > ${tx.sousCategorie}`:"";
+      const desc=tx.description?` – ${tx.description}`:"";
+      const li=document.createElement("li");
+      li.className="tx-row";
+      li.innerHTML=`
         <div class="tx-amount">${Number(tx.montant).toFixed(2)} €</div>
-        <div class="tx-desc">${tx.categorie}${sous}${label}</div>
+        <div class="tx-desc">${tx.categorie}${sous}${desc}</div>
         <div class="tx-account">${tx.compte}</div>
-        <div class="tx-actions">
-          <button class="btn-delete-square" data-timestamp="${tx.timestamp}" aria-label="Supprimer">×</button>
-        </div>
-      `;
+        <div class="tx-actions"><button class="btn-delete-square" data-timestamp="${tx.timestamp}">×</button></div>`;
       return li;
     }
 
-    // Titre colonnes sorties
-    if (sorties.length){
-      const head = document.createElement("h3");
-      head.textContent = "Sorties";
-      head.style.margin = "12px 0 8px";
-      listeTransactions.appendChild(head);
-      sorties.forEach(tx => listeTransactions.appendChild(makeTxRow(tx)));
-    }
+    sorties.forEach(tx=>colSorties.appendChild(makeTxRow(tx)));
+    entrees.forEach(tx=>colEntrees.appendChild(makeTxRow(tx)));
+    container.appendChild(colSorties);
+    container.appendChild(colEntrees);
+    listeTransactions.appendChild(container);
 
-    // Titre colonnes entrées
-    if (entrees.length){
-      const head2 = document.createElement("h3");
-      head2.textContent = "Entrées";
-      head2.style.margin = "16px 0 8px";
-      listeTransactions.appendChild(head2);
-      entrees.forEach(tx => listeTransactions.appendChild(makeTxRow(tx)));
-    }
-
-    // Suppression
-    document.querySelectorAll(".btn-delete-square").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const timestamp = btn.dataset.timestamp;
-        if (!confirm("Supprimer définitivement cette transaction ?")) return;
-        await fetch(`${sheetBestURL}/timestamp/${encodeURIComponent(timestamp)}`, { method: 'DELETE' });
+    document.querySelectorAll(".btn-delete-square").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        const timestamp=btn.dataset.timestamp;
+        if(!confirm("Supprimer définitivement cette transaction ?"))return;
+        await fetch(`${sheetBestURL}/timestamp/${encodeURIComponent(timestamp)}`,{method:"DELETE"});
         await chargerTransactions();
       });
     });
   }
 
-  /* ----------------------------- Ajout d'une transaction ------------------------------*/
-  form.addEventListener("submit", async (e) => {
+  form.addEventListener("submit",async(e)=>{
     e.preventDefault();
-    const nouvelle = {
-      type: typeInput.value,
-      montant: montantInput.value,
-      categorie: categorieInput.value,
-      sousCategorie: sousCategorieInput.value,
-      compte: compteInput.value,
-      date: moisAnneeInput.value,
-      description: descriptionInput.value,
-      timestamp: new Date().toISOString()
+    const nouvelle={
+      type:typeInput.value,montant:montantInput.value,categorie:categorieInput.value,
+      sousCategorie:sousCategorieInput.value,compte:compteInput.value,date:moisAnneeInput.value,
+      description:descriptionInput.value,timestamp:new Date().toISOString()
     };
-
-    await fetch(sheetBestURL, {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nouvelle)
-    });
-
+    await fetch(sheetBestURL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(nouvelle)});
     form.reset();
-    const now = new Date();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    moisAnneeInput.value = `${now.getFullYear()}-${mm}`;
-    await chargerTransactions();
+    const now=new Date();const mm=String(now.getMonth()+1).padStart(2,"0");
+    moisAnneeInput.value=`${now.getFullYear()}-${mm}`;await chargerTransactions();
   });
 
-  // Changement de période
-  moisSelect.addEventListener("change", () => afficherMoisSection());
-  anneeSelect.addEventListener("change", () => { afficherGlobal(); afficherMoisSection(); });
+  moisSelect.addEventListener("change",()=>afficherMoisSection());
+  anneeSelect.addEventListener("change",()=>{afficherGlobal();afficherMoisSection();});
+  toggleMetricBtn.addEventListener("click",()=>{legendMode=(legendMode==="percent")?"value":"percent";afficherMoisSection();});
 
-  // Toggle € / %
-  toggleMetricBtn.addEventListener("click", () => {
-    legendMode = (legendMode === "percent") ? "value" : "percent";
-    // Re-render legend with current month data
-    const moisFiltre = parseInt(moisSelect.value, 10);
-    const anneeFiltre = parseInt(anneeSelect.value, 10);
-    const txNorm = transactions.map(tx => ({
-      ...tx,
-      montant: parseFloat(tx.montant || 0),
-      annee: parseInt(String(tx.date || "").split("-")[0], 10),
-      mois: parseInt(String(tx.date || "").split("-")[1], 10),
-      type: tx.type,
-      categorie: tx.categorie || ""
-    }));
-    const moisSorties = txNorm.filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre && tx.type === "sortie");
-    const parCat = {};
-    moisSorties.forEach(t => { parCat[t.categorie] = (parCat[t.categorie] || 0) + t.montant; });
-    const entries = Object.entries(parCat).sort((a,b)=> a[0].localeCompare(b[0], 'fr', {sensitivity:'base'}));
-    const labels = entries.map(e=>e[0]);
-    const values = entries.map(e=>e[1]);
-    const total = values.reduce((a,b)=>a+b,0);
-    renderCatLegend(labels, values, total);
-  });
-
-  // 🚀 Démarrage
   remplirSelects();
   remplirFiltres();
   chargerTransactions();
