@@ -7,14 +7,14 @@ document.addEventListener("DOMContentLoaded", () => {
   let lineChart;
   let legendMode = "percent"; // 'percent' | 'value'
 
-  // 🎨 Couleurs camembert
+  // 🎨 Couleurs du camembert
   const PIE_COLORS = [
     "#59236E", "#0A1A45", "#1C9BE4", "#0044FF", "#3F2E9B",
     "#AA4BCF", "#22CAAE", "#550034", "#5D6970", "#6A88FF",
     "#93DDFF", "#19574C", "#B10D5F", "#B8A9FF", "#7BBBFF"
   ];
 
-  // 🧮 ———— Catégories et Comptes FIXES ————
+  // 📋 Catégories & Comptes fixes
   const CATEGORIES_FIXES = [
     "Apple", "Assurance", "Autre", "CAF", "Courses", "Électricité / Gaz",
     "Épargne", "Essence", "Forfait téléphone", "Garantie", "Liquide",
@@ -27,9 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
     "Révolut", "Trade Republic", "Fortunéo"
   ];
 
-  const SAVINGS_ORDER = ["Épargne PEL","Épargne Liv. A","Révolut","Trade Republic","Fortunéo"];
+  const SAVINGS_ORDER = ["Épargne PEL", "Épargne Liv. A", "Révolut", "Trade Republic", "Fortunéo"];
 
-  // 🔌 Sélecteurs DOM
+  // 🔌 Sélecteurs
   const form = document.getElementById("form-ajout");
   const typeInput = document.getElementById("type");
   const montantInput = document.getElementById("montant");
@@ -59,7 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ----------------------------- Remplir selects ------------------------------*/
   function remplirSelects() {
-    categorieInput.innerHTML = CATEGORIES_FIXES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    const catsSorted = [...CATEGORIES_FIXES].sort((a, b) => a.localeCompare(b, 'fr', {sensitivity: 'base'}));
+    categorieInput.innerHTML = catsSorted.map(cat => `<option value="${cat}">${cat}</option>`).join('');
     compteInput.innerHTML = COMPTES_FIXES.map(c => `<option value="${c}">${c}</option>`).join('');
   }
 
@@ -83,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     anneeActuelleSpan.textContent = anneeSelect.value;
   }
 
-  /* ----------------------------- Chargement & affichage ------------------------------*/
+  /* ----------------------------- Chargement ------------------------------*/
   async function chargerTransactions() {
     const res = await fetch(sheetBestURL);
     transactions = await res.json();
@@ -91,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
     afficherMoisSection();
   }
 
-  /* ====== Bloc 1 : Vue globale ====== */
+  /* ====== Vue globale ====== */
   function afficherGlobal() {
     const txNorm = transactions.map(tx => ({
       ...tx,
@@ -115,11 +116,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const comptesConnus = [...COMPTES_FIXES];
     const autres = Object.keys(totauxParCompte).filter(c => c && !comptesConnus.includes(c));
     const ordre = [...comptesConnus, ...autres];
-    comptesCumulesUl.innerHTML = ordre.map(c => `
-      <li><span>${c}</span><strong>${(totauxParCompte[c] || 0).toFixed(2)} €</strong></li>
-    `).join('');
 
-    // Graphique annuel
+    comptesCumulesUl.innerHTML = `
+      <li><span>Solde total cumulé</span><strong>${totalCumule.toFixed(2)} €</strong></li>
+      ${ordre.map(c => `
+        <li><span>${c}</span><strong>${(totauxParCompte[c] || 0).toFixed(2)} €</strong></li>
+      `).join('')}
+    `;
+
     const annee = parseInt(anneeSelect.value, 10);
     const netParMois = Array(12).fill(0);
     txNorm.filter(tx => tx.an === annee && tx.mois >= 1 && tx.mois <= 12).forEach(tx => {
@@ -141,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ====== Bloc 2 : Mois sélectionné ====== */
+  /* ====== Mois sélectionné ====== */
   function afficherMoisSection() {
     const moisFiltre = parseInt(moisSelect.value, 10);
     const anneeFiltre = parseInt(anneeSelect.value, 10);
@@ -235,13 +239,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const container=document.createElement("div");
     container.className="transactions-grid";
 
-    const colSorties=document.createElement("div");
-    colSorties.className="col-sorties";
-    colSorties.innerHTML="<h3>Sorties</h3>";
-
     const colEntrees=document.createElement("div");
     colEntrees.className="col-entrees";
     colEntrees.innerHTML="<h3>Entrées</h3>";
+
+    const colSorties=document.createElement("div");
+    colSorties.className="col-sorties";
+    colSorties.innerHTML="<h3>Sorties</h3>";
 
     function makeTxRow(tx){
       const sous=tx.sousCategorie?` > ${tx.sousCategorie}`:"";
@@ -256,10 +260,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return li;
     }
 
-    sorties.forEach(tx=>colSorties.appendChild(makeTxRow(tx)));
     entrees.forEach(tx=>colEntrees.appendChild(makeTxRow(tx)));
-    container.appendChild(colSorties);
+    sorties.forEach(tx=>colSorties.appendChild(makeTxRow(tx)));
+
     container.appendChild(colEntrees);
+    container.appendChild(colSorties);
     listeTransactions.appendChild(container);
 
     document.querySelectorAll(".btn-delete-square").forEach(btn=>{
