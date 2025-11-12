@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "#6ce5e8", "#41b8d5", "#2d8bba", "#506e9a", "#635a92",
     "#7e468a", "#942270", "#c12862", "#eb4e57", "#ff7742",
     "#ffae3a", "#efda5b", "#a6d664", "#5bbc6b", "#189f74",
-    "#228b7d", "#377376", "#21667d", "#176192", "#012238",  
+    "#228b7d", "#377376", "#21667d", "#176192", "#012238"
   ];
 
   // 📋 Catégories & Comptes fixes
@@ -93,59 +93,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ====== Vue globale ====== */
   function afficherGlobal() {
-    // Normalisation + conversion date → objet Date + signe
+    // Normalisation : somme signée (entrée +, sortie -) + mois/année
     const txNorm = transactions.map(tx => {
       const [a, m] = String(tx.date || "").split("-");
       const montant = parseFloat(tx.montant || 0);
-      const type = tx.type;
-      const signe = type === "sortie" ? -1 : 1;
+      const signe = (tx.type === "sortie") ? -1 : 1;
       return {
         ...tx,
         montant,
-        an: parseInt(a, 10),
-        mois: parseInt(m, 10),
-        type,
-        compte: tx.compte || "",
-        dateObj: new Date(`${a}-${m}-01`), // on s'en sert pour la courbe
-        signed: signe * montant,
+        an: parseInt(a || "0", 10),
+        mois: parseInt(m || "0", 10),
+        signed: montant * signe
       };
     });
 
     // Totaux par compte
     const totauxParCompte = {};
     txNorm.forEach(tx => {
-      if (!totauxParCompte[tx.compte]) totauxParCompte[tx.compte] = 0;
-      totauxParCompte[tx.compte] += tx.signed;
+      const c = tx.compte || "";
+      if (!totauxParCompte[c]) totauxParCompte[c] = 0;
+      totauxParCompte[c] += tx.signed;
     });
 
-    // Totaux
+    // Totaux globaux
     const totalCumule = Object.values(totauxParCompte).reduce((a,b)=>a+(b||0),0);
     const savingsTotal = SAVINGS_ORDER.reduce((sum, acc) => sum + (totauxParCompte[acc] || 0), 0);
 
-    // 🧾 Liste "Vue globale" : ligne sombre + CC + total épargne + autres
-    const autres = Object.keys(totauxParCompte)
-      .filter(c => c && !["Compte Courant", ...SAVINGS_ORDER].includes(c));
-
+    // Ordre d'affichage + rendu des lignes (2 lignes sombres)
+    const autres = Object.keys(totauxParCompte).filter(c => c && !["Compte Courant", ...SAVINGS_ORDER].includes(c));
     const ordre = ["Compte Courant", "Solde total épargne", ...SAVINGS_ORDER, ...autres];
 
     comptesCumulesUl.innerHTML = `
       <li class="total"><span>Solde total cumulé</span><strong>${totalCumule.toFixed(2)} €</strong></li>
       ${ordre.map(c => {
-        const val = (c === "Solde total épargne")
-          ? savingsTotal
-          : (totauxParCompte[c] || 0);
-        return `<li><span>${c}</span><strong>${val.toFixed(2)} €</strong></li>`;
+        const val = (c === "Solde total épargne") ? savingsTotal : (totauxParCompte[c] || 0);
+        const cls = (c === "Solde total épargne") ? ' class="total"' : '';
+        return `<li${cls}><span>${c}</span><strong>${val.toFixed(2)} €</strong></li>`;
       }).join('')}
     `;
 
-    // 📈 Évolution annuelle : solde total cumulé de fin de mois (global)
+    // 📈 Évolution annuelle : solde total cumulé de fin de mois
     const annee = parseInt(anneeSelect.value, 10);
-
-    // Pour chaque mois 1..12 de l'année sélectionnée, on calcule la somme signée
-    // de toutes les transactions jusqu'à la fin de CE mois (balance de fin de mois).
     const endOfMonthBalance = [];
     for (let m = 1; m <= 12; m++) {
-      // somme signée de toutes les tx dont la date <= fin de (annee, m)
       const bal = txNorm.reduce((acc, tx) => {
         const avantOuEqual = (tx.an < annee) || (tx.an === annee && tx.mois <= m);
         return acc + (avantOuEqual ? tx.signed : 0);

@@ -107,6 +107,13 @@ section{
   border:1px solid rgba(4,18,38,0.12);display:flex;justify-content:space-between;gap:10px;
 }
 
+/* Style sombre : "Solde total cumulé" et "Solde total épargne" */
+.accounts-list li.total {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
 /* --- Liste épargne (mois) --- */
 .savings-list{list-style:none;margin-top:8px;padding-left:0;}
 .savings-list li{
@@ -171,7 +178,7 @@ section{
 }
 .cat-value{white-space:nowrap;font-weight:800;color:#05172e;}
 
-/* --- Transactions : colonnes Entrées (gauche) / Sorties (droite) --- */
+/* --- Transactions : colonnes Entrées / Sorties --- */
 .transactions-grid{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;}
 .col-entrees,.col-sorties{flex:1;border-radius:10px;padding:10px;min-width:280px;}
 .col-entrees{background:#d5ffe0;}
@@ -205,9 +212,3 @@ form button:hover{background:var(--text);color:var(--bg);}
 
 /* --- Liens --- */
 a{color:var(--decor);} a:hover{text-decoration:underline;}
-/* Spécial: première ligne "Solde total cumulé" en style sombre */
-.accounts-list li.total {
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
