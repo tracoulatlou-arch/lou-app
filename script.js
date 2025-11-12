@@ -12,10 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
     "#6ce5e8", "#41b8d5", "#2d8bba", "#506e9a", "#635a92",
     "#7e468a", "#942270", "#c12862", "#eb4e57", "#ff7742",
     "#ffae3a", "#efda5b", "#a6d664", "#5bbc6b", "#189f74",
-   "#228b7d", "#377376", "#21667d", "#176192", "#012238",  
+    "#228b7d", "#377376", "#21667d", "#176192", "#012238",  
   ];
 
-  // 📋 Catégories & Comptes fixes (avec Santé + Autre)
+  // 📋 Catégories & Comptes fixes
   const CATEGORIES_FIXES = [
     "Apple", "Assurance", "Autre", "CAF", "Courses", "Électricité / Gaz",
     "Épargne", "Essence", "Forfait téléphone", "Garantie", "Liquide",
@@ -93,55 +93,77 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ====== Vue globale ====== */
   function afficherGlobal() {
-    const txNorm = transactions.map(tx => ({
-      ...tx,
-      montant: parseFloat(tx.montant || 0),
-      an: parseInt(String(tx.date || "").split("-")[0], 10),
-      mois: parseInt(String(tx.date || "").split("-")[1], 10),
-      type: tx.type,
-      compte: tx.compte || ""
-    }));
+    // Normalisation + conversion date → objet Date + signe
+    const txNorm = transactions.map(tx => {
+      const [a, m] = String(tx.date || "").split("-");
+      const montant = parseFloat(tx.montant || 0);
+      const type = tx.type;
+      const signe = type === "sortie" ? -1 : 1;
+      return {
+        ...tx,
+        montant,
+        an: parseInt(a, 10),
+        mois: parseInt(m, 10),
+        type,
+        compte: tx.compte || "",
+        dateObj: new Date(`${a}-${m}-01`), // on s'en sert pour la courbe
+        signed: signe * montant,
+      };
+    });
 
-    const totalCumule = txNorm.reduce((acc, tx) => acc + (tx.type === "sortie" ? -tx.montant : tx.montant), 0);
-    kpiSoldeCumule.textContent = `${totalCumule.toFixed(2)} €`;
-
+    // Totaux par compte
     const totauxParCompte = {};
     txNorm.forEach(tx => {
-      const sens = tx.type === "sortie" ? -1 : 1;
       if (!totauxParCompte[tx.compte]) totauxParCompte[tx.compte] = 0;
-      totauxParCompte[tx.compte] += sens * tx.montant;
+      totauxParCompte[tx.compte] += tx.signed;
     });
 
-    const comptesConnus = [...COMPTES_FIXES];
-    const autres = Object.keys(totauxParCompte).filter(c => c && !comptesConnus.includes(c));
-    const ordre = [...comptesConnus, ...autres];
+    // Totaux
+    const totalCumule = Object.values(totauxParCompte).reduce((a,b)=>a+(b||0),0);
+    const savingsTotal = SAVINGS_ORDER.reduce((sum, acc) => sum + (totauxParCompte[acc] || 0), 0);
+
+    // 🧾 Liste "Vue globale" : ligne sombre + CC + total épargne + autres
+    const autres = Object.keys(totauxParCompte)
+      .filter(c => c && !["Compte Courant", ...SAVINGS_ORDER].includes(c));
+
+    const ordre = ["Compte Courant", "Solde total épargne", ...SAVINGS_ORDER, ...autres];
 
     comptesCumulesUl.innerHTML = `
-      <li><span>Solde total cumulé</span><strong>${totalCumule.toFixed(2)} €</strong></li>
-      ${ordre.map(c => `
-        <li><span>${c}</span><strong>${(totauxParCompte[c] || 0).toFixed(2)} €</strong></li>
-      `).join('')}
+      <li class="total"><span>Solde total cumulé</span><strong>${totalCumule.toFixed(2)} €</strong></li>
+      ${ordre.map(c => {
+        const val = (c === "Solde total épargne")
+          ? savingsTotal
+          : (totauxParCompte[c] || 0);
+        return `<li><span>${c}</span><strong>${val.toFixed(2)} €</strong></li>`;
+      }).join('')}
     `;
 
+    // 📈 Évolution annuelle : solde total cumulé de fin de mois (global)
     const annee = parseInt(anneeSelect.value, 10);
-    const netParMois = Array(12).fill(0);
-    txNorm.filter(tx => tx.an === annee && tx.mois >= 1 && tx.mois <= 12).forEach(tx => {
-      const idx = tx.mois - 1;
-      netParMois[idx] += (tx.type === "sortie" ? -tx.montant : tx.montant);
-    });
-    const cumulParMois = netParMois.reduce((arr, val) => {
-      arr.push((arr[arr.length - 1] || 0) + val);
-      return arr;
-    }, []);
+
+    // Pour chaque mois 1..12 de l'année sélectionnée, on calcule la somme signée
+    // de toutes les transactions jusqu'à la fin de CE mois (balance de fin de mois).
+    const endOfMonthBalance = [];
+    for (let m = 1; m <= 12; m++) {
+      // somme signée de toutes les tx dont la date <= fin de (annee, m)
+      const bal = txNorm.reduce((acc, tx) => {
+        const avantOuEqual = (tx.an < annee) || (tx.an === annee && tx.mois <= m);
+        return acc + (avantOuEqual ? tx.signed : 0);
+      }, 0);
+      endOfMonthBalance.push(bal);
+    }
+
     if (lineChart) lineChart.destroy();
     lineChart = new Chart(chartAnnee, {
       type: "line",
       data: {
         labels: Array.from({length:12}, (_,i)=>getMoisNom(i)),
-        datasets: [{ label: "Solde cumulatif", data: cumulParMois, fill: false, tension: 0.25 }]
+        datasets: [{ label: "Solde total cumulé", data: endOfMonthBalance, fill: false, tension: 0.25 }]
       },
       options: { maintainAspectRatio:false, responsive:true, plugins:{ legend:{display:true,position:'bottom'} } }
     });
+
+    kpiSoldeCumule.textContent = `${totalCumule.toFixed(2)} €`;
   }
 
   /* ====== Mois sélectionné ====== */
@@ -190,8 +212,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     savingsUl.innerHTML = parts.join("");
 
+    // 🔁 Dépenses par catégorie : uniquement Compte Courant (sorties)
     const parCategorie = {};
-    const sortiesTx = moisTx.filter(t => t.type === "sortie");
+    const sortiesTx = moisTx.filter(t => t.type === "sortie" && t.compte === "Compte Courant");
     sortiesTx.forEach(tx => {
       parCategorie[tx.categorie] = (parCategorie[tx.categorie] || 0) + tx.montant;
     });
@@ -244,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderTransactionsList(moisTx){
-    // 🔄 NOUVEAU TRI : par ordre d'ajout (timestamp ISO) — plus récent en haut
+    // Tri par ordre d'ajout (timestamp ISO) — plus récent en haut
     const order = (tx) => {
       const t = Date.parse(tx.timestamp || tx.date || 0);
       return isNaN(t) ? 0 : t;
@@ -252,7 +275,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const entrees = moisTx
       .filter(tx => tx.type === "entrée")
       .sort((a,b) => order(b) - order(a));
-
     const sorties = moisTx
       .filter(tx => tx.type === "sortie")
       .sort((a,b) => order(b) - order(a));

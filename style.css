@@ -205,3 +205,9 @@ form button:hover{background:var(--text);color:var(--bg);}
 
 /* --- Liens --- */
 a{color:var(--decor);} a:hover{text-decoration:underline;}
+/* Spécial: première ligne "Solde total cumulé" en style sombre */
+.accounts-list li.total {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
