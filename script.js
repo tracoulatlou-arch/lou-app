@@ -244,9 +244,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderTransactionsList(moisTx){
-    const key=(tx)=>(tx.categorie+" "+tx.sousCategorie+" "+tx.description).trim().toLowerCase();
-    const entrees=moisTx.filter(tx=>tx.type==="entrée").sort((a,b)=>key(a).localeCompare(key(b)));
-    const sorties=moisTx.filter(tx=>tx.type==="sortie").sort((a,b)=>key(a).localeCompare(key(b)));
+    // 🔄 NOUVEAU TRI : par ordre d'ajout (timestamp ISO) — plus récent en haut
+    const order = (tx) => {
+      const t = Date.parse(tx.timestamp || tx.date || 0);
+      return isNaN(t) ? 0 : t;
+    };
+    const entrees = moisTx
+      .filter(tx => tx.type === "entrée")
+      .sort((a,b) => order(b) - order(a));
+
+    const sorties = moisTx
+      .filter(tx => tx.type === "sortie")
+      .sort((a,b) => order(b) - order(a));
 
     listeTransactions.innerHTML="";
     const container=document.createElement("div");
