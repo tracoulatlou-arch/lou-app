@@ -5,16 +5,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Prévisionnelle</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="previsionnelle.js" defer></script>
 </head>
 <body>
+  <!-- Bouton retour vers le menu paramètres -->
   <a id="btn-parametres" href="parametres.html" title="Menu">
     <div class="menu-icon"><span></span><span></span><span></span></div>
   </a>
+
   <header class="header-titre">
     <h1>PRÉVISIONNELLE</h1>
   </header>
+
+  <!-- Bloc haut : sélection du mois et résumé -->
+  <section class="two-col">
+    <div class="panel">
+      <h2>Mois prévisionnel</h2>
+      <div class="filters">
+        <label>Mois :
+          <select id="prev-mois-select"></select>
+        </label>
+        <label>Année :
+          <select id="prev-annee-select"></select>
+        </label>
+      </div>
+
+      <h3 class="section-sub">Résumé</h3>
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Dépenses prévues</div>
+          <div class="kpi-value" id="prev-kpi-depenses">0 €</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Entrées prévues</div>
+          <div class="kpi-value" id="prev-kpi-entrees">0 €</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Épargne prévue</div>
+          <div class="kpi-value" id="prev-kpi-epargne">0 €</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Solde prévisionnel</div>
+          <div class="kpi-value" id="prev-kpi-solde">0 €</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Enregistrement</h2>
+      <p class="hint">
+        Ce tableau fonctionne comme un mini-Excel : tu cliques dans les cases,
+        tu tapes les montants, les totaux se mettent à jour.  
+        Les données sont stockées dans <strong>un autre onglet Google Sheet</strong>,
+        séparé de ta page principale.
+      </p>
+      <div class="prev-actions">
+        <button id="prev-save">Enregistrer ce mois dans Google Sheet</button>
+        <span id="prev-status" class="hint"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bloc bas : tableau type Excel -->
   <section>
-    <p>La page sera bientôt active (solde prévisionnel, entrées/sorties prévues…).</p>
+    <h2>Tableau prévisionnel</h2>
+    <div class="prev-grid">
+      <!-- Colonne 1 : Dépenses -->
+      <div class="prev-col">
+        <h3 class="section-sub">Dépenses</h3>
+        <table class="prev-table">
+          <tbody id="prev-table-depenses"></tbody>
+        </table>
+      </div>
+
+      <!-- Colonne 2 : Entrées -->
+      <div class="prev-col">
+        <h3 class="section-sub">Entrées</h3>
+        <table class="prev-table">
+          <tbody id="prev-table-entrees"></tbody>
+        </table>
+      </div>
+
+      <!-- Colonne 3 : Épargne -->
+      <div class="prev-col">
+        <h3 class="section-sub">Épargne</h3>
+        <table class="prev-table">
+          <tbody id="prev-table-epargne"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 </body>
 </html>
