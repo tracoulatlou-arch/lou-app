@@ -2,7 +2,6 @@
 const sheetBestPrevURL = "https://api.sheetbest.com/sheets/2a404265-6cec-4903-b13a-1c11e8600b96";
 
 document.addEventListener("DOMContentLoaded", () => {
-
   // ----------------- Sélecteurs DOM -----------------
   const moisSelect = document.getElementById("prev-mois-select");
   const anneeSelect = document.getElementById("prev-annee-select");
