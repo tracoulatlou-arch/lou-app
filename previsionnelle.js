@@ -131,25 +131,19 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("🔹 Sauvegarde du mois", key);
 
     try {
-      // 1) Effacer les anciennes lignes de ce mois
-      const deleteRes = await fetch(`${sheetBestPrevURL}/mois/${encodeURIComponent(key)}`, {
-        method: "DELETE"
-      });
-      console.log("DELETE status =", deleteRes.status);
-
-      // 2) Construire les lignes à enregistrer
+      // 1) Construire toutes les lignes à enregistrer
       const rowsToSave = [];
       allInputs().forEach(input => {
-        if (input.value === "") return;
+        if (input.value === "") return; // on ignore les cases vides
         const montant = parseFloat(input.value || "0");
         if (isNaN(montant)) return;
 
         rowsToSave.push({
-          mois: key,
-          bloc: input.dataset.bloc,
-          ligne: input.dataset.id,
-          label: input.dataset.label,
-          montant
+          mois: key,                     // ex: "2025-11"
+          bloc: input.dataset.bloc,      // depenses / revenus / epargne
+          ligne: input.dataset.id,       // loyer, elec_gaz, salaire…
+          label: input.dataset.label,    // texte lisible
+          montant: montant
         });
       });
 
@@ -161,20 +155,24 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 3) Envoyer les lignes une par une
-      for (const row of rowsToSave) {
-        const postRes = await fetch(sheetBestPrevURL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(row)
-        });
-        console.log("POST status =", postRes.status, "row =", row);
+      // 2) Envoyer toutes les lignes en UNE SEULE requête POST
+      const postRes = await fetch(sheetBestPrevURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rowsToSave)   // on envoie un tableau d'objets
+      });
+
+      console.log("POST status =", postRes.status);
+
+      if (!postRes.ok) {
+        statusSpan.textContent = "Erreur (code " + postRes.status + ") 😢";
+        return;
       }
 
       statusSpan.textContent = "Enregistré ✔";
       setTimeout(() => { statusSpan.textContent = ""; }, 2500);
 
-      // 4) Recharger depuis Sheet.best pour vérifier
+      // 3) On recharge les données depuis Sheet.best
       await loadFromSheet();
 
     } catch (e) {
