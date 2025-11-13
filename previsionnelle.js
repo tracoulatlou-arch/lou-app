@@ -128,14 +128,16 @@ document.addEventListener("DOMContentLoaded", () => {
   async function saveCurrentMonth() {
     const key = getCurrentKey();
     statusSpan.textContent = "Enregistrement en cours...";
+    console.log("🔹 Sauvegarde du mois", key);
 
     try {
-      // 1) On supprime toutes les lignes existantes pour ce mois
-      await fetch(`${sheetBestPrevURL}/mois/${encodeURIComponent(key)}`, {
+      // 1) Effacer les anciennes lignes de ce mois
+      const deleteRes = await fetch(`${sheetBestPrevURL}/mois/${encodeURIComponent(key)}`, {
         method: "DELETE"
       });
+      console.log("DELETE status =", deleteRes.status);
 
-      // 2) On envoie toutes les valeurs non vides
+      // 2) Construire les lignes à enregistrer
       const rowsToSave = [];
       allInputs().forEach(input => {
         if (input.value === "") return;
@@ -151,24 +153,36 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
 
+      console.log("🔹 Lignes à sauvegarder :", rowsToSave);
+
+      if (rowsToSave.length === 0) {
+        statusSpan.textContent = "Rien à enregistrer (toutes les cases sont vides).";
+        setTimeout(() => { statusSpan.textContent = ""; }, 2500);
+        return;
+      }
+
+      // 3) Envoyer les lignes une par une
       for (const row of rowsToSave) {
-        await fetch(sheetBestPrevURL, {
+        const postRes = await fetch(sheetBestPrevURL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(row)
         });
+        console.log("POST status =", postRes.status, "row =", row);
       }
 
       statusSpan.textContent = "Enregistré ✔";
       setTimeout(() => { statusSpan.textContent = ""; }, 2500);
 
+      // 4) Recharger depuis Sheet.best pour vérifier
       await loadFromSheet();
 
     } catch (e) {
-      console.error("Erreur d'enregistrement :", e);
+      console.error("❌ Erreur d'enregistrement :", e);
       statusSpan.textContent = "Erreur lors de l'enregistrement 😢";
     }
   }
+
 
   // ----------------- Écouteurs -----------------
   moisSelect.addEventListener("change", applyValuesForCurrentMonth);
