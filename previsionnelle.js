@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const allInputs = () => document.querySelectorAll(".prev-input");
 
-  let allRows = []; // toutes les lignes venant de Google Sheet
+  // Toutes les lignes renvoyées par Sheet.best
+  let allRows = [];
 
   // ----------------- Utilitaires -----------------
   function getMoisNom(i) {
@@ -29,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const moisIndex = parseInt(moisSelect.value, 10); // 0..11
     const annee = parseInt(anneeSelect.value, 10);
     const mois = String(moisIndex + 1).padStart(2, "0");
-    return `${annee}-${mois}`;
+    return `${annee}-${mois}`;              // ex: "2025-11"
   }
 
   function formatEuro(v) {
@@ -59,8 +60,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ----------------- Chargement depuis Google Sheet -----------------
   async function loadFromSheet() {
     try {
+      console.log("🔹 Chargement depuis Sheet.best...");
       const res = await fetch(sheetBestPrevURL);
       allRows = await res.json();
+      console.log("🔹 Lignes reçues :", allRows.length);
       applyValuesForCurrentMonth();
     } catch (e) {
       console.error("Erreur chargement prévisionnel :", e);
@@ -72,25 +75,34 @@ document.addEventListener("DOMContentLoaded", () => {
     allInputs().forEach(input => {
       input.value = "";
     });
+    recalcTotals();
   }
 
   function applyValuesForCurrentMonth() {
     resetInputs();
     const key = getCurrentKey();
+    console.log("🔹 Application des valeurs pour", key);
+
     const rowsForMonth = allRows.filter(r => (r.mois || "").trim() === key);
 
+    // On garde la DERNIÈRE valeur pour chaque (bloc + ligne)
+    const lastValues = {};
     rowsForMonth.forEach(row => {
       const bloc = (row.bloc || "").trim();
       const ligne = (row.ligne || "").trim();
       const montant = parseFloat(row.montant || "0");
+      if (!bloc || !ligne || isNaN(montant)) return;
+      const keyMap = `${bloc}__${ligne}`;
+      lastValues[keyMap] = montant;
+    });
 
-      if (!bloc || !ligne) return;
-
+    Object.entries(lastValues).forEach(([keyMap, montant]) => {
+      const [bloc, ligne] = keyMap.split("__");
       const input = document.querySelector(
         `.prev-input[data-bloc="${bloc}"][data-id="${ligne}"]`
       );
       if (input) {
-        input.value = isNaN(montant) ? "" : montant;
+        input.value = montant;
       }
     });
 
@@ -134,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1) Construire toutes les lignes à enregistrer
       const rowsToSave = [];
       allInputs().forEach(input => {
-        if (input.value === "") return; // on ignore les cases vides
+        if (input.value === "") return; // ignore les cases vides
         const montant = parseFloat(input.value || "0");
         if (isNaN(montant)) return;
 
@@ -155,32 +167,32 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 2) Envoyer toutes les lignes en UNE SEULE requête POST
+      // 2) Envoyer toutes les lignes en UNE requête POST
       const postRes = await fetch(sheetBestPrevURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rowsToSave)   // on envoie un tableau d'objets
+        body: JSON.stringify(rowsToSave)   // tableau d'objets
       });
 
       console.log("POST status =", postRes.status);
 
       if (!postRes.ok) {
-        statusSpan.textContent = "Erreur (code " + postRes.status + ") 😢";
+        statusSpan.textContent = "Erreur API (code " + postRes.status + ") 😢";
         return;
       }
 
-      statusSpan.textContent = "Enregistré ✔";
-      setTimeout(() => { statusSpan.textContent = ""; }, 2500);
+      // ✅ L'API a accepté les données
+      statusSpan.textContent = "Enregistré ✔ (code " + postRes.status + ")";
+      setTimeout(() => { statusSpan.textContent = ""; }, 3500);
 
-      // 3) On recharge les données depuis Sheet.best
+      // On recharge les données pour ce mois (utile si d'autres lignes existaient déjà)
       await loadFromSheet();
 
     } catch (e) {
       console.error("❌ Erreur d'enregistrement :", e);
-      statusSpan.textContent = "Erreur lors de l'enregistrement 😢";
+      statusSpan.textContent = "Erreur JS lors de l'enregistrement 😢";
     }
   }
-
 
   // ----------------- Écouteurs -----------------
   moisSelect.addEventListener("change", applyValuesForCurrentMonth);
