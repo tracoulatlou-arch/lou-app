@@ -61,7 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadFromSheet() {
     try {
       console.log("🔹 Chargement depuis Sheet.best...");
-      const res = await fetch(sheetBestPrevURL);
+      // ?t=timestamp pour éviter tout cache
+      const res = await fetch(`${sheetBestPrevURL}?t=${Date.now()}`);
       allRows = await res.json();
       console.log("🔹 Lignes reçues :", allRows.length);
       applyValuesForCurrentMonth();
@@ -167,25 +168,25 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 2) Envoyer toutes les lignes en UNE requête POST
-      const postRes = await fetch(sheetBestPrevURL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rowsToSave)   // tableau d'objets
-      });
-
-      console.log("POST status =", postRes.status);
-
-      if (!postRes.ok) {
-        statusSpan.textContent = "Erreur API (code " + postRes.status + ") 😢";
-        return;
+      // 2) Envoyer chaque ligne UNE PAR UNE
+      for (const row of rowsToSave) {
+        const postRes = await fetch(sheetBestPrevURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(row)   // un seul objet par requête
+        });
+        console.log("POST row status =", postRes.status, row);
+        if (!postRes.ok) {
+          statusSpan.textContent = "Erreur API (code " + postRes.status + ") 😢";
+          return;
+        }
       }
 
-      // ✅ L'API a accepté les données
-      statusSpan.textContent = "Enregistré ✔ (code " + postRes.status + ")";
+      // ✅ L'API a accepté toutes les lignes
+      statusSpan.textContent = "Enregistré ✔";
       setTimeout(() => { statusSpan.textContent = ""; }, 3500);
 
-      // On recharge les données pour ce mois (utile si d'autres lignes existaient déjà)
+      // 3) On recharge les données depuis Sheet.best pour vérifier
       await loadFromSheet();
 
     } catch (e) {
