@@ -7,13 +7,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const moisSelect = document.getElementById("prev-mois-select");
   const anneeSelect = document.getElementById("prev-annee-select");
 
-  const kpiDepenses = document.getElementById("prev-kpi-depenses");
-  const kpiEntrees = document.getElementById("prev-kpi-entrees");
-  const kpiEpargne = document.getElementById("prev-kpi-epargne");
-  const kpiSolde = document.getElementById("prev-kpi-solde");
-
   const saveBtn = document.getElementById("prev-save");
   const statusSpan = document.getElementById("prev-status");
+
+  const totalDepensesCell = document.getElementById("total-depenses");
+  const totalEntreesCell = document.getElementById("total-entrees");
+  const totalEpargneCell = document.getElementById("total-epargne");
 
   const allInputs = () => document.querySelectorAll(".prev-input");
 
@@ -114,15 +113,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const dep = sumBloc("depenses");
     const ent = sumBloc("revenus");
     const ep = sumBloc("epargne");
-    const solde = ent - dep; // logique simple : entrées - dépenses
 
-    kpiDepenses.textContent = formatEuro(dep);
-    kpiEntrees.textContent = formatEuro(ent);
-    kpiEpargne.textContent = formatEuro(ep);
-    kpiSolde.textContent = formatEuro(solde);
+    totalDepensesCell.textContent = formatEuro(dep);
+    totalEntreesCell.textContent = formatEuro(ent);
+    totalEpargneCell.textContent = formatEuro(ep);
   }
 
-  // recalcul en direct quand on tape
   function attachInputListeners() {
     allInputs().forEach(input => {
       input.addEventListener("input", recalcTotals);

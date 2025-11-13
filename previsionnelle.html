@@ -17,58 +17,31 @@
     <h1>PRÉVISIONNELLE</h1>
   </header>
 
-  <!-- Bloc haut : sélection du mois et résumé -->
-  <section class="two-col">
-    <div class="panel">
-      <h2>Mois prévisionnel</h2>
-      <div class="filters">
-        <label>Mois :
-          <select id="prev-mois-select"></select>
-        </label>
-        <label>Année :
-          <select id="prev-annee-select"></select>
-        </label>
-      </div>
-
-      <h3 class="section-sub">Résumé</h3>
-      <div class="kpi-grid">
-        <div class="kpi">
-          <div class="kpi-label">Dépenses prévues</div>
-          <div class="kpi-value" id="prev-kpi-depenses">0 €</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Entrées prévues</div>
-          <div class="kpi-value" id="prev-kpi-entrees">0 €</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Épargne prévue</div>
-          <div class="kpi-value" id="prev-kpi-epargne">0 €</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Solde prévisionnel</div>
-          <div class="kpi-value" id="prev-kpi-solde">0 €</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Enregistrement</h2>
-      <p class="hint">
-        Ce tableau fonctionne comme un mini-Excel : tu cliques dans les cases,
-        tu tapes les montants, les totaux se mettent à jour.  
-        Les données sont stockées dans <strong>un autre Google Sheet</strong>
-        (connexion "PREVISIONNEL Suivi financier"), séparé de la page principale.
-      </p>
-      <div class="prev-actions">
-        <button id="prev-save">Enregistrer ce mois dans Google Sheet</button>
-        <span id="prev-status" class="hint"></span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Bloc bas : tableau type Excel -->
+  <!-- Section unique : tableau + choix du mois + bouton enregistrer -->
   <section>
-    <h2>Tableau prévisionnel</h2>
+    <div class="prev-header">
+      <h2>Tableau prévisionnel</h2>
+
+      <div class="prev-header-right">
+        <div class="filters">
+          <label>Mois :
+            <select id="prev-mois-select"></select>
+          </label>
+          <label>Année :
+            <select id="prev-annee-select"></select>
+          </label>
+        </div>
+        <div class="prev-actions-inline">
+          <button id="prev-save">Enregistrer ce mois</button>
+          <span id="prev-status" class="hint"></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="hint" style="margin-bottom:10px;">
+      Choisis le mois et l'année, remplis les cases comme dans ton Excel, puis clique sur
+      <strong>“Enregistrer ce mois”</strong>. Tu peux revenir plus tard sur un autre mois pour voir ou modifier ses prévisions.
+    </p>
 
     <div class="prev-grid">
       <!-- Colonne 1 : Dépenses -->
@@ -126,6 +99,12 @@
 
             <tr><td class="prev-label">Shein</td>
               <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="shein" data-label="Shein"></td></tr>
+
+            <!-- TOTAL DÉPENSES -->
+            <tr class="prev-total-row">
+              <td class="prev-label prev-total-label">Total dépenses</td>
+              <td class="prev-total-cell" id="total-depenses">0 €</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -152,6 +131,12 @@
 
             <tr><td class="prev-label">Papa / Maman</td>
               <td><input type="number" step="0.01" class="prev-input" data-bloc="revenus" data-id="papa_maman" data-label="Papa / Maman"></td></tr>
+
+            <!-- TOTAL ENTRÉES -->
+            <tr class="prev-total-row">
+              <td class="prev-label prev-total-label">Total entrées</td>
+              <td class="prev-total-cell" id="total-entrees">0 €</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -169,6 +154,12 @@
 
             <tr><td class="prev-label">LEP</td>
               <td><input type="number" step="0.01" class="prev-input" data-bloc="epargne" data-id="lep" data-label="LEP"></td></tr>
+
+            <!-- TOTAL ÉPARGNE -->
+            <tr class="prev-total-row">
+              <td class="prev-label prev-total-label">Total épargne</td>
+              <td class="prev-total-cell" id="total-epargne">0 €</td>
+            </tr>
           </tbody>
         </table>
       </div>

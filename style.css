@@ -290,3 +290,47 @@ a{color:var(--decor);} a:hover{text-decoration:underline;}
 #prev-status{
   font-size:0.85rem;
 }
+/* En-tête du bloc prévisionnel */
+.prev-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:8px;
+}
+.prev-header-right{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  align-items:flex-end;
+}
+.prev-actions-inline{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* Totaux dans le tableau */
+.prev-total-row td{
+  background:rgba(4,18,38,0.08);
+  font-weight:700;
+}
+.prev-total-label{
+  text-transform:uppercase;
+}
+.prev-total-cell{
+  text-align:right;
+}
+#prev-save{
+  padding:8px 14px;
+  border-radius:8px;
+  border:none;
+  background:var(--decor);
+  color:var(--bg);
+  font-weight:600;
+  cursor:pointer;
+  transition:.15s ease;
+}
+#prev-save:hover{
+  filter:brightness(1.05);
+}
