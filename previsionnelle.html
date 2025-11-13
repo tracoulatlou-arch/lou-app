@@ -56,8 +56,8 @@
       <p class="hint">
         Ce tableau fonctionne comme un mini-Excel : tu cliques dans les cases,
         tu tapes les montants, les totaux se mettent à jour.  
-        Les données sont stockées dans <strong>un autre onglet Google Sheet</strong>,
-        séparé de ta page principale.
+        Les données sont stockées dans <strong>un autre Google Sheet</strong>
+        (connexion "PREVISIONNEL Suivi financier"), séparé de la page principale.
       </p>
       <div class="prev-actions">
         <button id="prev-save">Enregistrer ce mois dans Google Sheet</button>
@@ -69,12 +69,64 @@
   <!-- Bloc bas : tableau type Excel -->
   <section>
     <h2>Tableau prévisionnel</h2>
+
     <div class="prev-grid">
       <!-- Colonne 1 : Dépenses -->
       <div class="prev-col">
         <h3 class="section-sub">Dépenses</h3>
         <table class="prev-table">
-          <tbody id="prev-table-depenses"></tbody>
+          <tbody>
+            <tr><td class="prev-label">Mois précédent</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="mois_prec" data-label="Mois précédent"></td></tr>
+
+            <tr><td class="prev-label">Loyer moi</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="loyer" data-label="Loyer moi"></td></tr>
+
+            <tr><td class="prev-label">Élec + Gaz</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="elec_gaz" data-label="Élec + Gaz"></td></tr>
+
+            <tr><td class="prev-label">Ass. voiture + trott.</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="ass_voiture_trot" data-label="Ass. voiture + trott."></td></tr>
+
+            <tr><td class="prev-label">Garantie</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="garantie" data-label="Garantie"></td></tr>
+
+            <tr><td class="prev-label">Téléphone</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="tel" data-label="Téléphone"></td></tr>
+
+            <tr><td class="prev-label">Apple</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="apple" data-label="Apple"></td></tr>
+
+            <tr><td class="prev-label">Essence</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="essence" data-label="Essence"></td></tr>
+
+            <tr><td class="prev-label">Courses</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="courses" data-label="Courses"></td></tr>
+
+            <tr><td class="prev-label">Épargne LIV.A</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="epargne_liv_a" data-label="Épargne LIV.A"></td></tr>
+
+            <tr><td class="prev-label">Compte</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="compte" data-label="Compte"></td></tr>
+
+            <tr><td class="prev-label">Trad.</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="trad" data-label="Trad."></td></tr>
+
+            <tr><td class="prev-label">Épargne PEL</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="epargne_pel" data-label="Épargne PEL"></td></tr>
+
+            <tr><td class="prev-label">Max</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="max" data-label="Max"></td></tr>
+
+            <tr><td class="prev-label">Extra</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="extra" data-label="Extra"></td></tr>
+
+            <tr><td class="prev-label">Max ass.</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="max_ass" data-label="Max ass."></td></tr>
+
+            <tr><td class="prev-label">Shein</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="depenses" data-id="shein" data-label="Shein"></td></tr>
+          </tbody>
         </table>
       </div>
 
@@ -82,7 +134,25 @@
       <div class="prev-col">
         <h3 class="section-sub">Entrées</h3>
         <table class="prev-table">
-          <tbody id="prev-table-entrees"></tbody>
+          <tbody>
+            <tr><td class="prev-label">Salaire</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="revenus" data-id="salaire" data-label="Salaire"></td></tr>
+
+            <tr><td class="prev-label">CAF Prime</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="revenus" data-id="caf_prime" data-label="CAF Prime"></td></tr>
+
+            <tr><td class="prev-label">Max</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="revenus" data-id="max" data-label="Max"></td></tr>
+
+            <tr><td class="prev-label">Shein</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="revenus" data-id="shein" data-label="Shein"></td></tr>
+
+            <tr><td class="prev-label">ASS. AXA</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="revenus" data-id="ass_axa" data-label="ASS. AXA"></td></tr>
+
+            <tr><td class="prev-label">Papa / Maman</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="revenus" data-id="papa_maman" data-label="Papa / Maman"></td></tr>
+          </tbody>
         </table>
       </div>
 
@@ -90,7 +160,16 @@
       <div class="prev-col">
         <h3 class="section-sub">Épargne</h3>
         <table class="prev-table">
-          <tbody id="prev-table-epargne"></tbody>
+          <tbody>
+            <tr><td class="prev-label">LIV.A</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="epargne" data-id="liv_a" data-label="LIV.A"></td></tr>
+
+            <tr><td class="prev-label">PEL</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="epargne" data-id="pel" data-label="PEL"></td></tr>
+
+            <tr><td class="prev-label">LEP</td>
+              <td><input type="number" step="0.01" class="prev-input" data-bloc="epargne" data-id="lep" data-label="LEP"></td></tr>
+          </tbody>
         </table>
       </div>
     </div>
