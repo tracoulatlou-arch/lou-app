@@ -212,11 +212,33 @@ form button:hover{background:var(--text);color:var(--bg);}
 
 /* --- Liens --- */
 a{color:var(--decor);} a:hover{text-decoration:underline;}
-/* --- Tableau prévisionnel type Excel --- */
+/* =============== PRÉVISIONNELLE =============== */
 
+.prev-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:10px;
+}
+
+.prev-header-right{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:flex-end;
+}
+
+.prev-actions-inline{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+/* Grille : Dépenses / Entrées / Épargne */
 .prev-grid{
   display:grid;
-  grid-template-columns:repeat(3, minmax(0,1fr));
+  grid-template-columns:1.5fr 1.2fr 1.1fr;
   gap:16px;
   margin-top:12px;
 }
@@ -231,96 +253,103 @@ a{color:var(--decor);} a:hover{text-decoration:underline;}
   margin-bottom:6px;
 }
 
+/* Tableaux */
 .prev-table{
   width:100%;
   border-collapse:collapse;
   font-size:0.9rem;
 }
 
+.prev-table thead th{
+  background:rgba(255,255,255,0.9);
+  border:1px solid rgba(0,0,0,0.08);
+  padding:6px 8px;
+}
+
 .prev-table td{
-  border:1px solid rgba(4,18,38,0.25);
+  border:1px solid rgba(0,0,0,0.05);
   padding:4px 6px;
 }
 
+/* Colonne catégorie (gauche) */
 .prev-label{
-  background:rgba(255,255,255,0.7);
+  background:rgba(255,255,255,0.8);
   font-weight:600;
   white-space:nowrap;
 }
 
+/* Inputs montant */
+.prev-amount-col{ width:110px; }
+
 .prev-input{
   width:100%;
-  border:none;
-  outline:none;
-  background:rgba(255,255,255,0.9);
-  padding:4px 6px;
-  border-radius:4px;
+  padding:6px 8px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  background:#F2FDFF;
+  color:#050F2A;
   font-size:0.9rem;
   text-align:right;
 }
 
-.prev-input:focus{
-  background:#fff;
-  box-shadow:0 0 0 2px var(--decor);
+/* Colonne "Autre" : case blanche */
+.prev-note-col{ width:180px; }
+
+.prev-note-cell{
+  background:#ffffff;
 }
 
-.prev-actions{
-  margin-top:12px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-#prev-save{
-  padding:8px 14px;
-  border-radius:8px;
+.prev-note{
+  width:100%;
+  padding:6px 8px;
   border:none;
-  background:var(--decor);
-  color:var(--bg);
-  font-weight:600;
-  cursor:pointer;
-  transition:.15s ease;
+  background:transparent;
+  color:#050F2A;
+  font-size:0.9rem;
 }
 
-#prev-save:hover{
-  filter:brightness(1.05);
+/* Lignes ajoutées : catégorie avec même fond que les labels */
+.prev-label-input{
+  width:100%;
+  border:none;
+  background:transparent;
+  color:#050F2A;
+  font-size:0.9rem;
+  padding:0;
 }
 
-#prev-status{
-  font-size:0.85rem;
-}
-/* En-tête du bloc prévisionnel */
-.prev-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:16px;
-  margin-bottom:8px;
-}
-.prev-header-right{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  align-items:flex-end;
-}
-.prev-actions-inline{
-  display:flex;
-  align-items:center;
-  gap:8px;
+/* Ligne des totaux */
+.prev-total-row{
+  background:rgba(0,0,0,0.03);
 }
 
-/* Totaux dans le tableau */
-.prev-total-row td{
-  background:rgba(4,18,38,0.08);
-  font-weight:700;
-}
 .prev-total-label{
+  font-weight:700;
   text-transform:uppercase;
 }
+
 .prev-total-cell{
+  font-weight:800;
   text-align:right;
 }
+
+/* Bouton "Ajouter une ligne" */
+.prev-add-row{
+  margin-top:8px;
+  padding:6px 10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#fff;
+  cursor:pointer;
+  font-size:0.85rem;
+  font-weight:600;
+}
+
+.prev-add-row:hover{
+  background:#f4f7ff;
+}
+
+/* Bouton "Enregistrer ce mois" */
 #prev-save{
   padding:8px 14px;
   border-radius:8px;
@@ -331,6 +360,7 @@ a{color:var(--decor);} a:hover{text-decoration:underline;}
   cursor:pointer;
   transition:.15s ease;
 }
+
 #prev-save:hover{
   filter:brightness(1.05);
 }

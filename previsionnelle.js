@@ -22,17 +22,17 @@ document.addEventListener("DOMContentLoaded", () => {
     depenses: [
       "loyer",
       "elec_gaz",
-      "tel",
-      "apple",
-      "garantie",
       "ass_voiture",
+      "garantie",
+      "tel",
+      "credit_agricole",
+      "apple",
       "essence",
       "courses",
-      "compte",
-      "epargne_tr",
       "epargne_pel",
-      "livret_a",
-      "credit_agricole"
+      "epargne_tr_dep",
+      "epargne_livret_a_dep",
+      "epargne_fortuneo_dep"
     ],
     revenus: [
       "salaire",
@@ -114,9 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const tr = document.createElement("tr");
     tr.classList.add("custom-row");
     tr.innerHTML = `
-      <td><input type="text" class="prev-label-input" data-bloc="${bloc}" data-id="${id}" value="${labelText||""}"></td>
+      <td class="prev-label">
+        <input type="text" class="prev-label-input" data-bloc="${bloc}" data-id="${id}" value="${labelText||""}">
+      </td>
       <td><input type="number" step="0.01" class="prev-input" data-bloc="${bloc}" data-id="${id}"></td>
-      <td><input type="text" class="prev-note" data-bloc="${bloc}" data-id="${id}"></td>
+      <td class="prev-note-cell"><input type="text" class="prev-note" data-bloc="${bloc}" data-id="${id}"></td>
     `;
     tbody.appendChild(tr);
 
@@ -238,8 +240,6 @@ document.addEventListener("DOMContentLoaded", () => {
       statusSpan.textContent = "Enregistré ✔";
       setTimeout(()=>statusSpan.textContent="",3000);
 
-      // On ne recharge pas tout de suite pour ne pas effacer la saisie
-      // Le rechargement se fait quand tu changes de mois.
     }catch(e){
       console.error("Erreur enregistrement :",e);
       statusSpan.textContent = "Erreur lors de l'enregistrement 😢";
