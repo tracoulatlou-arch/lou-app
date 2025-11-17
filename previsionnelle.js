@@ -50,6 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const customCounters = { depenses: 0, revenus: 0, epargne: 0 };
   let allRows = [];
 
+  /* --------- Utilitaires --------- */
+
   function getMoisNom(i){
     return [
       "Janvier","Février","Mars","Avril","Mai","Juin",
@@ -66,6 +68,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatEuro(v){
     return `${v.toFixed(2)} €`;
+  }
+
+  // Mémorise les valeurs par défaut de chaque champ montant
+  function storeDefaults(){
+    document.querySelectorAll(".prev-input").forEach(input=>{
+      if(!input.dataset.default){
+        input.dataset.default = input.value || "";
+      }
+    });
   }
 
   function initFiltres(){
@@ -92,8 +103,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // IMPORTANT : réinitialise les champs aux valeurs par défaut
   function resetInputs(){
-    allAmountInputs().forEach(i=>i.value="");
+    document.querySelectorAll(".prev-input").forEach(input=>{
+      const def = (typeof input.dataset.default !== "undefined")
+        ? input.dataset.default
+        : "";
+      input.value = def;
+    });
+
     document.querySelectorAll(".prev-note").forEach(i=>i.value="");
     document.querySelectorAll("tr.custom-row").forEach(tr=>tr.remove());
     recalcTotals();
@@ -129,7 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function applyValuesForCurrentMonth(){
-    resetInputs();
+    resetInputs(); // remet les valeurs par défaut
+
     const key = getCurrentKey();
     const rowsForMonth = allRows.filter(r => (r.mois||"").trim()===key);
 
@@ -246,7 +265,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Boutons "Ajouter une ligne" (Dépenses + Entrées uniquement)
+  /* --------- Écouteurs --------- */
+
   document.querySelectorAll(".prev-add-row").forEach(btn=>{
     btn.addEventListener("click",()=>{
       const bloc = btn.dataset.bloc;
@@ -257,6 +277,11 @@ document.addEventListener("DOMContentLoaded", () => {
   moisSelect.addEventListener("change", applyValuesForCurrentMonth);
   anneeSelect.addEventListener("change", applyValuesForCurrentMonth);
   saveBtn.addEventListener("click", saveCurrentMonth);
+
+  /* --------- Init globale --------- */
+
+  // Sauvegarde les valeurs par défaut dès le départ (ex: loyer = 550)
+  storeDefaults();
 
   initFiltres();
   attachInputListeners();
