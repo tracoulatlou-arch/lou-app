@@ -252,16 +252,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // ✅ Ajout via /addRows (JSON objects) — on envoie toutes les lignes en une fois
-      const res = await fetch(sheetPrevAddURL,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(rowsToSave)
-      });
+      const res = await fetch(sheetBestPrevURL, {
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify(rowsToSave)
+});
 
-      if (!res.ok) {
-        statusSpan.textContent = "Erreur API ("+res.status+") 😢";
-        return;
-      }
+if(!res.ok){
+  statusSpan.textContent = "Erreur API ("+res.status+") 😢";
+  return;
+}
+
 
       statusSpan.textContent = "Enregistré ✔";
       setTimeout(()=>statusSpan.textContent="",3000);
