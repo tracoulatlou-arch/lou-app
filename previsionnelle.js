@@ -100,9 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadFromSheet(){
     try{
+      // GET sur NoCodeAPI : retour { data: [...] }
       const res = await fetch(`${sheetPrevGetURL}&t=${Date.now()}`);
       const json = await res.json();
-      // NoCodeAPI renvoie { data: [...] } (ou "données")
       allRows = json.data || json["données"] || json;
       applyValuesForCurrentMonth();
     }catch(e){
@@ -251,18 +251,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // ✅ Ajout via /addRows (JSON objects) — on envoie toutes les lignes en une fois
-      const res = await fetch(sheetBestPrevURL, {
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify(rowsToSave)
-});
+      // ✅ Ajout via /addRows (JSON objects) — toutes les lignes d’un coup
+      const res = await fetch(sheetPrevAddURL,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(rowsToSave)
+      });
 
-if(!res.ok){
-  statusSpan.textContent = "Erreur API ("+res.status+") 😢";
-  return;
-}
-
+      if(!res.ok){
+        statusSpan.textContent = "Erreur API ("+res.status+") 😢";
+        return;
+      }
 
       statusSpan.textContent = "Enregistré ✔";
       setTimeout(()=>statusSpan.textContent="",3000);
