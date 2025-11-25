@@ -1,5 +1,11 @@
-// ✅ URL Sheet.best (la tienne)
-const sheetBestURL = "https://api.sheetbest.com/sheets/dfb86ada-81c7-4a1c-8bc4-544c2281c911";
+// ✅ URLs NoCodeAPI pour le SUIVI FINANCIER (onglet INDEX)
+const SHEET_BASE_URL = "https://v1.nocodeapi.com/loou142/google_sheets/STGjwyHejbcWtDSk";
+const TAB_ID = "INDEX";
+
+// GET / DELETE (lecture + suppression)
+const sheetBestURL = `${SHEET_BASE_URL}?tabId=${TAB_ID}`;
+// POST en JSON objets (ajout de lignes)
+const sheetAddURL  = `${SHEET_BASE_URL}/addRows?tabId=${TAB_ID}`;
 
 document.addEventListener("DOMContentLoaded", () => {
   let transactions = [];
@@ -86,7 +92,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ----------------------------- Chargement ------------------------------*/
   async function chargerTransactions() {
     const res = await fetch(sheetBestURL);
-    transactions = await res.json();
+    const json = await res.json();
+    // NoCodeAPI renvoie { data: [...] } (ou "données" en UI FR) → on récupère le tableau
+    transactions = json.data || json["données"] || json;
     afficherGlobal();
     afficherMoisSection();
   }
@@ -172,7 +180,8 @@ document.addEventListener("DOMContentLoaded", () => {
         sousCategorie: tx.sousCategorie || "",
         description: tx.description || "",
         type: tx.type || "",
-        timestamp: tx.timestamp || ""
+        timestamp: tx.timestamp || "",
+        row_id: tx.row_id // gardé pour la suppression
       };
     });
     const moisTx = txNorm.filter(tx => tx.mois === (moisFiltre + 1) && tx.annee === anneeFiltre);
@@ -290,7 +299,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="tx-amount">${Number(tx.montant).toFixed(2)} €</div>
         <div class="tx-desc">${tx.categorie}${sous}${desc}</div>
         <div class="tx-account">${tx.compte}</div>
-        <div class="tx-actions"><button class="btn-delete-square" data-timestamp="${tx.timestamp}">×</button></div>`;
+        <div class="tx-actions">
+          <button class="btn-delete-square" data-rowid="${tx.row_id || ""}">×</button>
+        </div>`;
       return li;
     }
 
@@ -301,11 +312,20 @@ document.addEventListener("DOMContentLoaded", () => {
     container.appendChild(colSorties);
     listeTransactions.appendChild(container);
 
+    // 🔥 Suppression via row_id NoCodeAPI
     document.querySelectorAll(".btn-delete-square").forEach(btn=>{
       btn.addEventListener("click",async()=>{
-        const timestamp=btn.dataset.timestamp;
-        if(!confirm("Supprimer définitivement cette transaction ?"))return;
-        await fetch(`${sheetBestURL}/timestamp/${encodeURIComponent(timestamp)}`,{method:"DELETE"});
+        const rowId = btn.dataset.rowid;
+        if (!rowId) {
+          alert("Impossible de supprimer cette ligne : row_id manquant.");
+          return;
+        }
+        if(!confirm("Supprimer définitivement cette transaction ?")) return;
+
+        await fetch(`${sheetBestURL}&row_id=${encodeURIComponent(rowId)}`, {
+          method:"DELETE"
+        });
+
         await chargerTransactions();
       });
     });
@@ -314,14 +334,28 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit",async(e)=>{
     e.preventDefault();
     const nouvelle={
-      type:typeInput.value,montant:montantInput.value,categorie:categorieInput.value,
-      sousCategorie:sousCategorieInput.value,compte:compteInput.value,date:moisAnneeInput.value,
-      description:descriptionInput.value,timestamp:new Date().toISOString()
+      type:typeInput.value,
+      montant:montantInput.value,
+      categorie:categorieInput.value,
+      sousCategorie:sousCategorieInput.value,
+      compte:compteInput.value,
+      date:moisAnneeInput.value,
+      description:descriptionInput.value,
+      timestamp:new Date().toISOString()
     };
-    await fetch(sheetBestURL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(nouvelle)});
+
+    // ✅ Ajout via /addRows (JSON objects)
+    await fetch(sheetAddURL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify([nouvelle])
+    });
+
     form.reset();
-    const now=new Date();const mm=String(now.getMonth()+1).padStart(2,"0");
-    moisAnneeInput.value=`${now.getFullYear()}-${mm}`;await chargerTransactions();
+    const now=new Date();
+    const mm=String(now.getMonth()+1).padStart(2,"0");
+    moisAnneeInput.value=`${now.getFullYear()}-${mm}`;
+    await chargerTransactions();
   });
 
   moisSelect.addEventListener("change",()=>afficherMoisSection());

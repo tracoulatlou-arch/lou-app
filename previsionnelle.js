@@ -1,5 +1,11 @@
-// 🔗 URL Sheet.best pour le PREVISIONNEL
-const sheetBestPrevURL = "https://api.sheetbest.com/sheets/2a404265-6cec-4903-b13a-1c11e8600b96";
+// 🔗 URLs NoCodeAPI pour le PREVISIONNEL
+const PREV_BASE_URL   = "https://v1.nocodeapi.com/loou142/google_sheets/YsLMknJkjiuqDlxW";
+const PREV_TAB_ID     = "PREVISIONNEL";
+
+// GET (lecture)
+const sheetPrevGetURL = `${PREV_BASE_URL}?tabId=${PREV_TAB_ID}`;
+// POST en JSON objets (ajout de lignes)
+const sheetPrevAddURL = `${PREV_BASE_URL}/addRows?tabId=${PREV_TAB_ID}`;
 
 document.addEventListener("DOMContentLoaded", () => {
   const moisSelect = document.getElementById("prev-mois-select");
@@ -94,8 +100,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadFromSheet(){
     try{
-      const res = await fetch(`${sheetBestPrevURL}?t=${Date.now()}`);
-      allRows = await res.json();
+      const res = await fetch(`${sheetPrevGetURL}&t=${Date.now()}`);
+      const json = await res.json();
+      // NoCodeAPI renvoie { data: [...] } (ou "données")
+      allRows = json.data || json["données"] || json;
       applyValuesForCurrentMonth();
     }catch(e){
       console.error("Erreur chargement prévisionnel :",e);
@@ -243,17 +251,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      for(const row of rowsToSave){
-        const res = await fetch(sheetBestPrevURL,{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body:JSON.stringify(row)
-        });
-        console.log("POST row status =",res.status,row);
-        if(!res.ok){
-          statusSpan.textContent = "Erreur API ("+res.status+") 😢";
-          return;
-        }
+      // ✅ Ajout via /addRows (JSON objects) — on envoie toutes les lignes en une fois
+      const res = await fetch(sheetPrevAddURL,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(rowsToSave)
+      });
+
+      if (!res.ok) {
+        statusSpan.textContent = "Erreur API ("+res.status+") 😢";
+        return;
       }
 
       statusSpan.textContent = "Enregistré ✔";
