@@ -1,11 +1,6 @@
 // 🔗 URLs NoCodeAPI pour le PREVISIONNEL
-const PREV_BASE_URL   = "https://v1.nocodeapi.com/loou142/google_sheets/YsLMknJkjiuqDlxW";
-const PREV_TAB_ID     = "PREVISIONNEL";
-
-// GET (lecture)
-const sheetPrevGetURL = `${PREV_BASE_URL}?tabId=${PREV_TAB_ID}`;
-// POST en JSON objets (ajout de lignes)
-const sheetPrevAddURL = `${PREV_BASE_URL}/addRows?tabId=${PREV_TAB_ID}`;
+const PREV_BASE_URL = "https://v1.nocodeapi.com/loou142/google_sheets/YsLMknJkjiuqDlxW";
+const PREV_SHEET_URL = `${PREV_BASE_URL}?tabId=PREVISIONNEL`;
 
 document.addEventListener("DOMContentLoaded", () => {
   const moisSelect = document.getElementById("prev-mois-select");
@@ -100,8 +95,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadFromSheet(){
     try{
-      // GET sur NoCodeAPI : retour { data: [...] }
-      const res = await fetch(`${sheetPrevGetURL}&t=${Date.now()}`);
+      // GET sur NoCodeAPI : retour { data: [...] } (ou "données" en FR)
+      const res = await fetch(`${PREV_SHEET_URL}&t=${Date.now()}`);
       const json = await res.json();
       allRows = json.data || json["données"] || json;
       applyValuesForCurrentMonth();
@@ -251,14 +246,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // ✅ Ajout via /addRows (JSON objects) — toutes les lignes d’un coup
-      const res = await fetch(sheetPrevAddURL,{
+      // ✅ Ajout via POST sur l’URL de la feuille (toutes les lignes d’un coup)
+      const res = await fetch(PREV_SHEET_URL,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify(rowsToSave)
       });
 
       if(!res.ok){
+        const txt = await res.text().catch(()=>"(pas de body)");
+        console.error("Réponse NocodeAPI non OK:", res.status, txt);
         statusSpan.textContent = "Erreur API ("+res.status+") 😢";
         return;
       }
