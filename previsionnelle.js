@@ -154,43 +154,70 @@ document.addEventListener("DOMContentLoaded", () => {
     return tr;
   }
 
-  function applyValuesForCurrentMonth(){
-    resetInputs(); // remet les valeurs par défaut
+  function applyValuesForCurrentMonth() {
+  resetInputs(); // remet les valeurs par défaut
 
-    const key = getCurrentKey();
-    const rowsForMonth = allRows.filter(r => (r.mois||"").trim()===key);
+  const key = getCurrentKey();
 
-    const map = {};
-    rowsForMonth.forEach(row=>{
-      const bloc = (row.bloc||"").trim();
-      const ligne = (row.ligne||"").trim();
-      if(!bloc||!ligne) return;
-      const montant = parseFloat(row.montant||"0");
-      const label = row.label || "";
-      const note  = row.note  || "";
-      map[`${bloc}__${ligne}`] = {montant,label,note};
+  // 1) On filtre toutes les lignes correspondant au mois sélectionné
+  // 2) On trie par row_id pour s'assurer que la dernière version passe en dernier
+  const rowsForMonth = allRows
+    .filter(r => (r.mois || "").trim() === key)
+    .sort((a, b) => {
+      const ra = parseInt(a.row_id || "0", 10);
+      const rb = parseInt(b.row_id || "0", 10);
+      return ra - rb;
     });
 
-    Object.entries(map).forEach(([keyMap,data])=>{
-      const [bloc,ligne] = keyMap.split("__");
-      const isStatic = STATIC_IDS[bloc] && STATIC_IDS[bloc].includes(ligne);
+  const map = {};
 
-      if(isStatic){
-        const amountInput = document.querySelector(`.prev-input[data-bloc="${bloc}"][data-id="${ligne}"]`);
-        const noteInput   = document.querySelector(`.prev-note[data-bloc="${bloc}"][data-id="${ligne}"]`);
-        if(amountInput && !isNaN(data.montant)) amountInput.value = data.montant;
-        if(noteInput) noteInput.value = data.note || "";
-      }else{
-        const tr = addCustomRow(bloc, ligne, data.label);
-        const amountInput = tr.querySelector(".prev-input");
-        const noteInput   = tr.querySelector(".prev-note");
-        if(amountInput && !isNaN(data.montant)) amountInput.value = data.montant;
-        if(noteInput) noteInput.value = data.note || "";
-      }
-    });
+  // Chaque clé (bloc + ligne) sera écrasée par la plus récente
+  rowsForMonth.forEach(row => {
+    const bloc = (row.bloc || "").trim();
+    const ligne = (row.ligne || "").trim();
+    if (!bloc || !ligne) return;
 
-    recalcTotals();
-  }
+    const montant = parseFloat(row.montant || "0");
+    const label = row.label || "";
+    const note = row.note || "";
+
+    const keyMap = `${bloc}__${ligne}`;
+    map[keyMap] = { montant, label, note };
+  });
+
+  // On applique ces valeurs dans le tableau HTML
+  Object.entries(map).forEach(([keyMap, data]) => {
+    const [bloc, ligne] = keyMap.split("__");
+    const isStatic =
+      STATIC_IDS[bloc] && STATIC_IDS[bloc].includes(ligne);
+
+    if (isStatic) {
+      // Ligne statique : existe déjà dans le tableau
+      const amountInput = document.querySelector(
+        `.prev-input[data-bloc="${bloc}"][data-id="${ligne}"]`
+      );
+      const noteInput = document.querySelector(
+        `.prev-note[data-bloc="${bloc}"][data-id="${ligne}"]`
+      );
+
+      if (amountInput && !isNaN(data.montant))
+        amountInput.value = data.montant;
+      if (noteInput) noteInput.value = data.note || "";
+    } else {
+      // Ligne custom : on la crée
+      const tr = addCustomRow(bloc, ligne, data.label);
+
+      const amountInput = tr.querySelector(".prev-input");
+      const noteInput = tr.querySelector(".prev-note");
+
+      if (amountInput && !isNaN(data.montant))
+        amountInput.value = data.montant;
+      if (noteInput) noteInput.value = data.note || "";
+    }
+  });
+
+  recalcTotals();
+}
 
   function sumBloc(bloc){
     let sum=0;
