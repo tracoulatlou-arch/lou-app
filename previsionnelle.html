@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Prévisionnelle</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="previsionnelle.js?v=5" defer></script>
+  <script src="previsionnelle.js?v=6" defer></script>
 </head>
 <body>
   <!-- Bouton retour vers le menu paramètres -->
@@ -37,11 +37,21 @@
       </div>
     </div>
 
-    <p class="hint" style="margin-bottom:10px;">
-      Pour chaque ligne tu as un <strong>montant</strong> et une colonne <strong>“Autre”</strong>
-      (détail, calcul, commentaire…). Tu peux aussi ajouter des lignes libres avec
-      <strong>“Ajouter une ligne”</strong> dans Dépenses et Entrées.
-    </p>
+    <!-- 🔵 Cadre blanc de résumé global -->
+    <div class="prev-resume">
+      <div class="prev-resume-item">
+        <div class="prev-resume-label">Total dépenses</div>
+        <div id="resume-depenses" class="prev-resume-value">0 €</div>
+      </div>
+      <div class="prev-resume-item">
+        <div class="prev-resume-label">Total entrées</div>
+        <div id="resume-entrees" class="prev-resume-value">0 €</div>
+      </div>
+      <div class="prev-resume-item">
+        <div class="prev-resume-label">Résultat (entrées - dépenses)</div>
+        <div id="resume-resultat" class="prev-resume-value">0 €</div>
+      </div>
+    </div>
 
     <div class="prev-grid">
 

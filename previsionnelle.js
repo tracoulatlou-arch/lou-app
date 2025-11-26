@@ -17,6 +17,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalEntreesCell  = document.getElementById("total-entrees");
   const totalEpargneCell  = document.getElementById("total-epargne");
 
+  // Résumé global (cadre blanc)
+  const resumeDepensesSpan = document.getElementById("resume-depenses");
+  const resumeEntreesSpan  = document.getElementById("resume-entrees");
+  const resumeResultatSpan = document.getElementById("resume-resultat");
+
   const tbodyDepenses = document.getElementById("tbody-depenses");
   const tbodyRevenus  = document.getElementById("tbody-revenus");
   const tbodyEpargne  = document.getElementById("tbody-epargne");
@@ -258,9 +263,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function recalcTotals(){
-    totalDepensesCell.textContent = formatEuro(sumBloc("depenses"));
-    totalEntreesCell.textContent  = formatEuro(sumBloc("revenus"));
-    totalEpargneCell.textContent  = formatEuro(sumBloc("epargne"));
+    const dep  = sumBloc("depenses");
+    const ent  = sumBloc("revenus");
+    const epar = sumBloc("epargne");
+    const res  = ent - dep;
+
+    // totaux en bas des tableaux
+    totalDepensesCell.textContent = formatEuro(dep);
+    totalEntreesCell.textContent  = formatEuro(ent);
+    totalEpargneCell.textContent  = formatEuro(epar);
+
+    // résumé global en haut
+    if (resumeDepensesSpan) resumeDepensesSpan.textContent = formatEuro(dep);
+    if (resumeEntreesSpan)  resumeEntreesSpan.textContent  = formatEuro(ent);
+
+    if (resumeResultatSpan){
+      resumeResultatSpan.textContent = formatEuro(res);
+      resumeResultatSpan.classList.toggle("negatif", res < 0);
+    }
   }
 
   function attachInputListeners(){

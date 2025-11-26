@@ -364,3 +364,48 @@ a{color:var(--decor);} a:hover{text-decoration:underline;}
 #prev-save:hover{
   filter:brightness(1.05);
 }
+/* ===== Résumé global (dépenses / entrées / résultat) ===== */
+
+.prev-resume{
+  margin-top:12px;
+  margin-bottom:12px;
+  background:#ffffff;
+  border-radius:10px;
+  padding:10px 18px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  border:1px solid rgba(0,0,0,0.06);
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+.prev-resume-item{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+
+.prev-resume-label{
+  font-size:0.8rem;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:#204060;
+  opacity:0.9;
+}
+
+.prev-resume-value{
+  font-size:1.15rem;
+  font-weight:800;
+  color:#05172e;
+}
+
+/* résultat négatif en rouge foncé */
+.prev-resume-value.negatif{
+  color:#b00020;
+}
+
+@media (max-width:800px){
+  .prev-resume{
+    grid-template-columns:1fr;
+  }
+}
