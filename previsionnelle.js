@@ -8,18 +8,18 @@ const PREV_GET_URL  = `${PREV_BASE_URL}?tabId=${PREV_TAB_ID}`;
 const PREV_ADD_URL  = `${PREV_BASE_URL}/addRows?tabId=${PREV_TAB_ID}`;
 
 document.addEventListener("DOMContentLoaded", () => {
-  const moisSelect = document.getElementById("prev-mois-select");
+  const moisSelect  = document.getElementById("prev-mois-select");
   const anneeSelect = document.getElementById("prev-annee-select");
-  const saveBtn = document.getElementById("prev-save");
-  const statusSpan = document.getElementById("prev-status");
+  const saveBtn     = document.getElementById("prev-save");
+  const statusSpan  = document.getElementById("prev-status");
 
   const totalDepensesCell = document.getElementById("total-depenses");
-  const totalEntreesCell = document.getElementById("total-entrees");
-  const totalEpargneCell = document.getElementById("total-epargne");
+  const totalEntreesCell  = document.getElementById("total-entrees");
+  const totalEpargneCell  = document.getElementById("total-epargne");
 
   const tbodyDepenses = document.getElementById("tbody-depenses");
-  const tbodyRevenus = document.getElementById("tbody-revenus");
-  const tbodyEpargne = document.getElementById("tbody-epargne");
+  const tbodyRevenus  = document.getElementById("tbody-revenus");
+  const tbodyEpargne  = document.getElementById("tbody-epargne");
 
   const allAmountInputs = () => document.querySelectorAll(".prev-input");
 
@@ -53,7 +53,10 @@ document.addEventListener("DOMContentLoaded", () => {
     ]
   };
 
+  // Compteurs pour générer custom_depenses_1, custom_revenus_2, etc.
   const customCounters = { depenses: 0, revenus: 0, epargne: 0 };
+
+  // Toutes les lignes venant de la Google Sheet
   let allRows = [];
 
   /* --------- Utilitaires --------- */
@@ -69,14 +72,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const mIdx = parseInt(moisSelect.value,10);
     const year = parseInt(anneeSelect.value,10);
     const mois = String(mIdx+1).padStart(2,"0");
-    return `${year}-${mois}`;
+    return `${year}-${mois}`;           // ex: "2025-12"
   }
 
   function formatEuro(v){
     return `${v.toFixed(2)} €`;
   }
 
-  // Mémorise les valeurs par défaut de chaque champ montant
+  // Mémorise les valeurs par défaut des montants (ex: loyer = 550)
   function storeDefaults(){
     document.querySelectorAll(".prev-input").forEach(input=>{
       if(!input.dataset.default){
@@ -90,20 +93,21 @@ document.addEventListener("DOMContentLoaded", () => {
       .map(i=>`<option value="${i}">${getMoisNom(i)}</option>`).join("");
 
     const now = new Date();
-    const y = now.getFullYear();
+    const y   = now.getFullYear();
     anneeSelect.innerHTML = [...Array(3).keys()]
       .map(i=>`<option value="${y+i}">${y+i}</option>`).join("");
 
-    moisSelect.value = String(now.getMonth());
+    moisSelect.value  = String(now.getMonth());
     anneeSelect.value = String(y);
   }
 
+  // 🔄 Charge toutes les lignes de la feuille PREVISIONNELLE
   async function loadFromSheet(){
     try{
-      // GET sur NoCodeAPI : retour { data: [...] } (ou "données")
-      const res = await fetch(`${PREV_GET_URL}&t=${Date.now()}`);
+      const res  = await fetch(`${PREV_GET_URL}&t=${Date.now()}`);
       const json = await res.json();
-      allRows = json.data || json["données"] || json;
+      allRows    = json.data || json["données"] || json;
+
       applyValuesForCurrentMonth();
     }catch(e){
       console.error("Erreur chargement prévisionnel :",e);
@@ -111,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // IMPORTANT : réinitialise les champs aux valeurs par défaut
+  // Remet les inputs aux valeurs par défaut + supprime les lignes custom visuelles
   function resetInputs(){
     document.querySelectorAll(".prev-input").forEach(input=>{
       const def = (typeof input.dataset.default !== "undefined")
@@ -125,15 +129,17 @@ document.addEventListener("DOMContentLoaded", () => {
     recalcTotals();
   }
 
-  function addCustomRow(bloc, id=null, labelText=""){
-    const tbody = bloc==="depenses"
+  // Ajout d'une ligne custom dans le tableau HTML
+  function addCustomRow(bloc, id = null, labelText = ""){
+    const tbody = (bloc === "depenses")
       ? tbodyDepenses
-      : bloc==="revenus"
+      : (bloc === "revenus")
       ? tbodyRevenus
       : tbodyEpargne;
 
+    // Si pas d'id (clic sur "Ajouter une ligne") → on génère un nouvel id
     if(!id){
-      customCounters[bloc] = (customCounters[bloc]||0)+1;
+      customCounters[bloc] = (customCounters[bloc] || 0) + 1;
       id = `custom_${bloc}_${customCounters[bloc]}`;
     }
 
@@ -141,10 +147,17 @@ document.addEventListener("DOMContentLoaded", () => {
     tr.classList.add("custom-row");
     tr.innerHTML = `
       <td class="prev-label">
-        <input type="text" class="prev-label-input" data-bloc="${bloc}" data-id="${id}" value="${labelText||""}">
+        <input type="text" class="prev-label-input"
+               data-bloc="${bloc}" data-id="${id}" value="${labelText||""}">
       </td>
-      <td><input type="number" step="0.01" class="prev-input" data-bloc="${bloc}" data-id="${id}"></td>
-      <td class="prev-note-cell"><input type="text" class="prev-note" data-bloc="${bloc}" data-id="${id}"></td>
+      <td>
+        <input type="number" step="0.01" class="prev-input"
+               data-bloc="${bloc}" data-id="${id}">
+      </td>
+      <td class="prev-note-cell">
+        <input type="text" class="prev-note"
+               data-bloc="${bloc}" data-id="${id}">
+      </td>
     `;
     tbody.appendChild(tr);
 
@@ -154,77 +167,92 @@ document.addEventListener("DOMContentLoaded", () => {
     return tr;
   }
 
+  // 💡 Applique les données du mois courant au tableau HTML
+  //    + met les compteurs customCounters à jour (1,2,3…)
   function applyValuesForCurrentMonth() {
-  resetInputs(); // remet les valeurs par défaut
+    resetInputs();
 
-  const key = getCurrentKey();
+    // On repart de zéro pour les compteurs custom
+    customCounters.depenses = 0;
+    customCounters.revenus  = 0;
+    customCounters.epargne  = 0;
 
-  // 1) On filtre toutes les lignes correspondant au mois sélectionné
-  // 2) On trie par row_id pour s'assurer que la dernière version passe en dernier
-  const rowsForMonth = allRows
-    .filter(r => (r.mois || "").trim() === key)
-    .sort((a, b) => {
-      const ra = parseInt(a.row_id || "0", 10);
-      const rb = parseInt(b.row_id || "0", 10);
-      return ra - rb;
+    const key = getCurrentKey();
+
+    // On prend uniquement les lignes du mois sélectionné
+    // et on trie par row_id pour que la dernière écrase les précédentes
+    const rowsForMonth = allRows
+      .filter(r => (r.mois || "").trim() === key)
+      .sort((a, b) => {
+        const ra = parseInt(a.row_id || "0", 10);
+        const rb = parseInt(b.row_id || "0", 10);
+        return ra - rb;
+      });
+
+    const map = {};
+
+    rowsForMonth.forEach(row => {
+      const bloc  = (row.bloc  || "").trim();   // depenses / revenus / epargne
+      const ligne = (row.ligne || "").trim();   // ex: loyer, custom_revenus_1
+      if (!bloc || !ligne) return;
+
+      const montant = parseFloat(row.montant || "0");
+      const label   = row.label || "";
+      const note    = row.note  || "";
+
+      // Met à jour les compteurs si c'est une ligne custom
+      const m = ligne.match(/^custom_(.+)_([0-9]+)$/);
+      if (m) {
+        const blocInId = m[1];              // ex: "revenus"
+        const num      = parseInt(m[2],10); // ex: 1,2,3…
+        customCounters[blocInId] = Math.max(customCounters[blocInId] || 0, num);
+      }
+
+      // Enregistre la dernière version pour ce bloc + ligne
+      const keyMap = `${bloc}__${ligne}`;
+      map[keyMap] = { montant, label, note };
     });
 
-  const map = {};
+    // Applique les valeurs au DOM
+    Object.entries(map).forEach(([keyMap, data]) => {
+      const [bloc, ligne] = keyMap.split("__");
+      const isStatic = STATIC_IDS[bloc] && STATIC_IDS[bloc].includes(ligne);
 
-  // Chaque clé (bloc + ligne) sera écrasée par la plus récente
-  rowsForMonth.forEach(row => {
-    const bloc = (row.bloc || "").trim();
-    const ligne = (row.ligne || "").trim();
-    if (!bloc || !ligne) return;
+      if (isStatic) {
+        // Ligne fixe existante
+        const amountInput = document.querySelector(
+          `.prev-input[data-bloc="${bloc}"][data-id="${ligne}"]`
+        );
+        const noteInput = document.querySelector(
+          `.prev-note[data-bloc="${bloc}"][data-id="${ligne}"]`
+        );
 
-    const montant = parseFloat(row.montant || "0");
-    const label = row.label || "";
-    const note = row.note || "";
+        if (amountInput && !isNaN(data.montant))
+          amountInput.value = data.montant;
+        if (noteInput)
+          noteInput.value = data.note || "";
+      } else {
+        // Ligne custom → on la (re)crée avec le bon id et le bon label
+        const tr = addCustomRow(bloc, ligne, data.label);
+        const amountInput = tr.querySelector(".prev-input");
+        const noteInput   = tr.querySelector(".prev-note");
 
-    const keyMap = `${bloc}__${ligne}`;
-    map[keyMap] = { montant, label, note };
-  });
+        if (amountInput && !isNaN(data.montant))
+          amountInput.value = data.montant;
+        if (noteInput)
+          noteInput.value = data.note || "";
+      }
+    });
 
-  // On applique ces valeurs dans le tableau HTML
-  Object.entries(map).forEach(([keyMap, data]) => {
-    const [bloc, ligne] = keyMap.split("__");
-    const isStatic =
-      STATIC_IDS[bloc] && STATIC_IDS[bloc].includes(ligne);
-
-    if (isStatic) {
-      // Ligne statique : existe déjà dans le tableau
-      const amountInput = document.querySelector(
-        `.prev-input[data-bloc="${bloc}"][data-id="${ligne}"]`
-      );
-      const noteInput = document.querySelector(
-        `.prev-note[data-bloc="${bloc}"][data-id="${ligne}"]`
-      );
-
-      if (amountInput && !isNaN(data.montant))
-        amountInput.value = data.montant;
-      if (noteInput) noteInput.value = data.note || "";
-    } else {
-      // Ligne custom : on la crée
-      const tr = addCustomRow(bloc, ligne, data.label);
-
-      const amountInput = tr.querySelector(".prev-input");
-      const noteInput = tr.querySelector(".prev-note");
-
-      if (amountInput && !isNaN(data.montant))
-        amountInput.value = data.montant;
-      if (noteInput) noteInput.value = data.note || "";
-    }
-  });
-
-  recalcTotals();
-}
+    recalcTotals();
+  }
 
   function sumBloc(bloc){
-    let sum=0;
+    let sum = 0;
     allAmountInputs().forEach(input=>{
-      if(input.dataset.bloc!==bloc) return;
-      const v = parseFloat(input.value||"0");
-      if(!isNaN(v)) sum+=v;
+      if(input.dataset.bloc !== bloc) return;
+      const v = parseFloat(input.value || "0");
+      if(!isNaN(v)) sum += v;
     });
     return sum;
   }
@@ -241,26 +269,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // 💾 Enregistre toutes les lignes du mois courant dans la Google Sheet
   async function saveCurrentMonth(){
     const key = getCurrentKey();
     statusSpan.textContent = "Enregistrement en cours...";
 
     try{
       const rowsToSave = [];
-      allAmountInputs().forEach(input=>{
-        if(input.value==="") return;
 
-        const bloc = input.dataset.bloc;
-        const id   = input.dataset.id;
-        const montant = parseFloat(input.value||"0");
+      allAmountInputs().forEach(input=>{
+        if(input.value === "") return;
+
+        const bloc    = input.dataset.bloc;
+        const id      = input.dataset.id;
+        const montant = parseFloat(input.value || "0");
         if(isNaN(montant)) return;
 
-        const noteInput  = document.querySelector(`.prev-note[data-bloc="${bloc}"][data-id="${id}"]`);
+        const noteInput = document.querySelector(
+          `.prev-note[data-bloc="${bloc}"][data-id="${id}"]`
+        );
         const note = noteInput ? noteInput.value : "";
 
-        const labelInput = document.querySelector(`.prev-label-input[data-bloc="${bloc}"][data-id="${id}"]`);
+        const labelInput = document.querySelector(
+          `.prev-label-input[data-bloc="${bloc}"][data-id="${id}"]`
+        );
         let label = input.dataset.label || "";
-        if(labelInput) label = labelInput.value || label;
+        if (labelInput) label = labelInput.value || label;
 
         rowsToSave.push({
           mois: key,
@@ -272,20 +306,20 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
 
-      if(rowsToSave.length===0){
+      if (rowsToSave.length === 0){
         statusSpan.textContent = "Rien à enregistrer.";
         setTimeout(()=>statusSpan.textContent="",2500);
         return;
       }
 
-      // ✅ ICI : on utilise l'endpoint addRows qui accepte un tableau d'objets JSON
-      const res = await fetch(PREV_ADD_URL,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(rowsToSave)
+      // Envoie toutes les lignes d'un coup à NoCodeAPI
+      const res = await fetch(PREV_ADD_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rowsToSave)
       });
 
-      if(!res.ok){
+      if (!res.ok){
         const txt = await res.text().catch(()=>"(pas de body)");
         console.error("Réponse NocodeAPI non OK:", res.status, txt);
         statusSpan.textContent = "Erreur API ("+res.status+") 😢";
@@ -303,9 +337,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --------- Écouteurs --------- */
 
+  // Boutons "+ Ajouter une ligne"
   document.querySelectorAll(".prev-add-row").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const bloc = btn.dataset.bloc;
+    btn.addEventListener("click", () => {
+      const bloc = btn.dataset.bloc; // "depenses" ou "revenus"
       addCustomRow(bloc);
     });
   });
@@ -316,9 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* --------- Init globale --------- */
 
-  // Sauvegarde les valeurs par défaut dès le départ (ex: loyer = 550)
   storeDefaults();
-
   initFiltres();
   attachInputListeners();
   loadFromSheet();
